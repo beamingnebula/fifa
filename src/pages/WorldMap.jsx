@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import TopBar from '../components/TopBar';
 import FlagIcon from '../components/FlagIcon';
 import { getAllTeams, GROUPS } from '../data/teams';
+import { useFixtures } from '../context/FixturesContext';
 
 const MAP_MODES = ['Nations', 'Groups', 'Knockout'];
 
@@ -20,13 +21,83 @@ const projectLatLng = (lat, lng) => {
 };
 
 export default function WorldMap({ onBack, onTeamSelect }) {
+  const { fixtures } = useFixtures();
   const [mode, setMode] = useState('Nations');
   const [selected, setSelected] = useState(null);
-  const [viewBox, setViewBox] = useState('0 0 800 400');
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+  const svgRef = useRef(null);
 
   const teams = getAllTeams().filter(t => t.lat && t.lng);
+
+  const knockoutTeams = useMemo(() => {
+    const set = new Set();
+    fixtures.forEach(f => {
+      if (f.stage !== 'GROUP') {
+        if (f.home && f.home !== 'TBD' && f.home.length === 3) set.add(f.home);
+        if (f.away && f.away !== 'TBD' && f.away.length === 3) set.add(f.away);
+      }
+    });
+    return set;
+  }, [fixtures]);
+
+  // Non-passive wheel event listener
+  useEffect(() => {
+    const svgEl = svgRef.current;
+    if (!svgEl) return;
+
+    const onWheel = (e) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 1.15 : 0.85;
+      setZoom(z => Math.max(1, Math.min(z * factor, 6)));
+    };
+
+    svgEl.addEventListener('wheel', onWheel, { passive: false });
+    return () => {
+      svgEl.removeEventListener('wheel', onWheel);
+    };
+  }, []);
+
+  const handleMouseDown = (e) => {
+    if (e.target.tagName === 'circle' || e.target.closest('button')) return;
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    setPan({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.target.tagName === 'circle' || e.target.closest('button')) return;
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.touches[0].clientX - pan.x, y: e.touches[0].clientY - pan.y });
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    setPan({
+      x: e.touches[0].clientX - dragStart.x,
+      y: e.touches[0].clientY - dragStart.y
+    });
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
 
   const handleZoomIn = () => {
     setZoom(z => Math.min(z * 1.5, 6));
@@ -90,24 +161,36 @@ export default function WorldMap({ onBack, onTeamSelect }) {
       )}
 
       {/* Interactive SVG Map */}
-      <div style={{
-        margin: '8px 16px',
-        background: 'var(--bg-card)',
-        borderRadius: 16,
-        overflow: 'hidden',
-        boxShadow: 'var(--shadow-md)',
-        border: '1px solid var(--border-subtle)',
-        position: 'relative',
-        height: 280,
-      }}>
+      <div
+        style={{
+          margin: '8px 16px',
+          background: 'var(--bg-card)',
+          borderRadius: 16,
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-md)',
+          border: '1px solid var(--border-subtle)',
+          position: 'relative',
+          height: 280,
+          cursor: isDragging ? 'grabbing' : 'grab',
+          userSelect: 'none',
+        }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <svg
+          ref={svgRef}
           viewBox="0 0 800 400"
           style={{
             width: '100%',
             height: '100%',
             transform: `scale(${zoom}) translate(${pan.x}px, ${pan.y}px)`,
             transformOrigin: 'center center',
-            transition: 'transform 0.3s',
+            transition: isDragging ? 'none' : 'transform 0.1s ease-out',
           }}
         >
           {/* Ocean background */}
@@ -150,16 +233,32 @@ export default function WorldMap({ onBack, onTeamSelect }) {
           {/* Team Markers */}
           {teams.map(team => {
             const [x, y] = projectLatLng(team.lat, team.lng);
-            const color = mode === 'Groups'
-              ? (GROUP_COLORS[team.group] || '#C8102E')
-              : '#C8102E';
+            const isKnockoutTeam = knockoutTeams.has(team.code);
+            
+            let color = '#C8102E';
+            let opacity = 1;
+
+            if (mode === 'Groups') {
+              color = GROUP_COLORS[team.group] || '#C8102E';
+            } else if (mode === 'Knockout') {
+              if (isKnockoutTeam) {
+                color = 'var(--fifa-gold)'; // Gold for knockout qualified teams
+              } else {
+                color = '#5C6478'; // Gray for eliminated teams
+                opacity = 0.35;    // Fade them out
+              }
+            }
+            
             const isSelected = selected?.code === team.code;
 
             return (
               <g
                 key={team.code}
-                onClick={() => setSelected(team)}
-                style={{ cursor: 'pointer' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelected(team);
+                }}
+                style={{ cursor: 'pointer', opacity }}
               >
                 {/* Outer pulse */}
                 <circle

@@ -79,9 +79,69 @@ export default function MatchCenter({ onBack, onMatchClick, timezoneOffset = 6 }
         </div>
       ) : (
         <>
-          {displayed.map(m => (
-            <MatchCard key={m.id} match={m} onClick={onMatchClick} timezoneOffset={timezoneOffset} />
-          ))}
+          {filter === 'All' ? (
+            <>
+              {live.length > 0 && (
+                <>
+                  <div style={{
+                    padding: '16px 16px 8px',
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: 'var(--fifa-red)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}>
+                    <span className="live-dot" style={{ margin: 0, width: 6, height: 6 }} />
+                    Live Matches
+                  </div>
+                  {live.map(m => (
+                    <MatchCard key={m.id} match={m} onClick={onMatchClick} timezoneOffset={timezoneOffset} />
+                  ))}
+                </>
+              )}
+              {upcoming.length > 0 && (
+                <>
+                  <div style={{
+                    padding: '16px 16px 8px',
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: 'var(--fifa-gold)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                  }}>
+                    ⚽ Upcoming Matches
+                  </div>
+                  {upcoming.map(m => (
+                    <MatchCard key={m.id} match={m} onClick={onMatchClick} timezoneOffset={timezoneOffset} />
+                  ))}
+                </>
+              )}
+              {completed.length > 0 && (
+                <>
+                  <div style={{
+                    padding: '16px 16px 8px',
+                    fontSize: 12,
+                    fontWeight: 800,
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                  }}>
+                    ⏱ Finished Matches
+                  </div>
+                  {completed.map(m => (
+                    <MatchCard key={m.id} match={m} onClick={onMatchClick} timezoneOffset={timezoneOffset} />
+                  ))}
+                </>
+              )}
+            </>
+          ) : (
+            displayed.map(m => (
+              <MatchCard key={m.id} match={m} onClick={onMatchClick} timezoneOffset={timezoneOffset} />
+            ))
+          )}
           <div style={{ height: 24 }} />
         </>
       )}

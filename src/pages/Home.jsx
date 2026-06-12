@@ -11,7 +11,7 @@ import { useFixtures } from '../context/FixturesContext';
 
 const TOTAL_MATCHES = 104;
 
-export default function Home({ onNavigate, timezoneOffset = 6 }) {
+export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] }) {
   const {
     fixtures,
     loading: liveLoading,
@@ -32,6 +32,33 @@ export default function Home({ onNavigate, timezoneOffset = 6 }) {
   const liveMatches = fixtures.filter(f => getMatchStatus(f) === 'LIVE');
   const nextMatch = getNextFixture();
   const featuredMatch = liveMatches[0] || completed[completed.length - 1];
+
+  const getDaysLeft = (dateString) => {
+    const diff = new Date(dateString) - new Date();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return days;
+  };
+
+  const favoriteUpcomingMatches = React.useMemo(() => {
+    if (!favorites || favorites.length === 0) return [];
+    
+    return favorites.map(code => {
+      const team = TEAMS[code];
+      if (!team) return null;
+      
+      const teamMatches = fixtures.filter(f => 
+        (f.home === code || f.away === code) && 
+        getMatchStatus(f) === 'UPCOMING'
+      );
+      
+      const nextTeamMatch = teamMatches.sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate))[0] || null;
+      
+      return {
+        team,
+        nextMatch: nextTeamMatch,
+      };
+    }).filter(item => item !== null);
+  }, [favorites, fixtures]);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 600);
@@ -195,9 +222,93 @@ export default function Home({ onNavigate, timezoneOffset = 6 }) {
                 </span>
               </div>
             </div>
+
+            {/* Kickoff countdown */}
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 16, paddingTop: 12, display: 'flex', justifyContent: 'center' }}>
+              <Countdown targetDate={nextMatch.utcDate} compact={true} label="Kickoff in" />
+            </div>
           </div>
         </>
       )}
+
+      {/* ===== STARRED TEAMS TRACKER ===== */}
+      <div className="section-header">
+        <span className="section-title">⭐ Starred Teams Tracker</span>
+      </div>
+      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {favorites.length === 0 ? (
+          <div style={{
+            background: 'var(--bg-card)',
+            border: '1px dashed var(--text-muted)',
+            borderRadius: 16,
+            padding: '20px 16px',
+            textAlign: 'center',
+            color: 'var(--text-secondary)',
+            fontSize: 13,
+          }}>
+            Star your favorite teams in the <strong>Teams</strong> tab to track their next match here!
+          </div>
+        ) : (
+          favoriteUpcomingMatches.map(({ team, nextMatch }) => (
+            <div key={team.code} style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 16,
+              padding: '16px',
+              boxShadow: 'var(--shadow-card)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <FlagIcon code={team.flag} size="md" />
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--text-primary)' }}>{team.name}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>Group {team.group} · Rank #{team.fifaRank}</div>
+                  </div>
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--fifa-red)', background: 'rgba(200, 16, 46, 0.08)', padding: '2px 8px', borderRadius: 20 }}>
+                  {team.code}
+                </span>
+              </div>
+              
+              {nextMatch ? (
+                <div style={{
+                  background: 'var(--bg-primary)',
+                  borderRadius: 12,
+                  padding: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 8,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)' }}>
+                      vs {nextMatch.home === team.code ? (TEAMS[nextMatch.away]?.name || nextMatch.away) : (TEAMS[nextMatch.home]?.name || nextMatch.home)}
+                    </span>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
+                      {formatDate(nextMatch.utcDate, timezoneOffset)}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--border-subtle)', paddingTop: 8 }}>
+                    <Countdown targetDate={nextMatch.utcDate} compact={true} label="" />
+                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--fifa-gold)' }}>
+                      {(() => {
+                        const days = getDaysLeft(nextMatch.utcDate);
+                        return days > 0 ? `${days} day${days > 1 ? 's' : ''} left` : 'Today';
+                      })()}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: '4px 0' }}>
+                  No upcoming matches scheduled
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
 
       {/* ===== FEATURED MATCH ===== */}
       {featuredMatch && !liveMatches.includes(featuredMatch) && (

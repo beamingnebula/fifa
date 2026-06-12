@@ -1,22 +1,28 @@
 import React from 'react';
 import TopBar from '../components/TopBar';
 import FlagIcon from '../components/FlagIcon';
+import Countdown from '../components/Countdown';
 import { TEAMS } from '../data/teams';
 import { VENUES } from '../data/fixtures';
 import { getMatchStatus, getVenueById } from '../utils/matchUtils';
 import { formatFullDate, formatKickoff, formatDateTime } from '../utils/timeUtils';
-import { MapPin, Clock, Calendar, Activity, BarChart3, ArrowRight } from 'lucide-react';
+import { MapPin, Clock, Calendar, Activity, BarChart3, ArrowRight, RefreshCw } from 'lucide-react';
+import { useFixtures } from '../context/FixturesContext';
 
 export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
+  const { fixtures, refresh, loading } = useFixtures();
+  
   if (!match) return null;
 
-  const status = getMatchStatus(match);
+  const currentMatch = fixtures.find(f => f.id === match.id) || match;
+
+  const status = getMatchStatus(currentMatch);
   const isLive = status === 'LIVE';
   const isFT = status === 'FT';
   const isUpcoming = status === 'UPCOMING';
-  const venue = getVenueById(match.venue);
-  const homeTeam = TEAMS[match.home] || { name: match.home, flag: 'un' };
-  const awayTeam = TEAMS[match.away] || { name: match.away, flag: 'un' };
+  const venue = getVenueById(currentMatch.venue);
+  const homeTeam = TEAMS[currentMatch.home] || { name: currentMatch.home, flag: 'un' };
+  const awayTeam = TEAMS[currentMatch.away] || { name: currentMatch.away, flag: 'un' };
 
   // Simulated stats for played matches
   const stats = isFT || isLive ? {
@@ -49,7 +55,35 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
 
   return (
     <div>
-      <TopBar title={`Match Detail`} onBack={onBack} />
+      <TopBar 
+        title="Match Detail" 
+        onBack={onBack} 
+        rightAction={
+          (isLive || isFT) && (
+            <button
+              onClick={refresh}
+              disabled={loading}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-primary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--border-color)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <RefreshCw size={18} color="var(--text-primary)" style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+            </button>
+          )
+        }
+      />
 
       {/* Match Hero */}
       <div style={{
@@ -73,7 +107,7 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
           )}
           {isUpcoming && (
             <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: '1px' }}>
-              {match.group ? `GROUP ${match.group}` : match.stage}
+              {currentMatch.group ? `GROUP ${currentMatch.group}` : currentMatch.stage}
             </span>
           )}
         </div>
@@ -89,12 +123,12 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             {isFT || isLive ? (
               <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 56, color: 'white', lineHeight: 1, letterSpacing: 4 }}>
-                {match.homeScore} - {match.awayScore}
+                {currentMatch.homeScore} - {currentMatch.awayScore}
               </div>
             ) : (
               <>
                 <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 28, color: 'rgba(255,255,255,0.5)', letterSpacing: 3 }}>VS</div>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#FFD700' }}>{formatKickoff(match.utcDate, timezoneOffset)}</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#FFD700' }}>{formatKickoff(currentMatch.utcDate, timezoneOffset)}</div>
                 <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>BST</div>
               </>
             )}
@@ -111,8 +145,8 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
       {/* Match Info */}
       <div className="info-card">
         {[
-          { icon: Calendar, label: 'Date', value: formatFullDate(match.utcDate, timezoneOffset) },
-          { icon: Clock,    label: 'Kickoff',  value: `${formatKickoff(match.utcDate, timezoneOffset)} BST` },
+          { icon: Calendar, label: 'Date', value: formatFullDate(currentMatch.utcDate, timezoneOffset) },
+          { icon: Clock,    label: 'Kickoff',  value: `${formatKickoff(currentMatch.utcDate, timezoneOffset)} BST` },
           ...(venue ? [
             { icon: MapPin, label: 'Stadium', value: venue.name },
             { icon: MapPin, label: 'City',    value: `${venue.city}, ${venue.country}` },
@@ -165,17 +199,7 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
       {/* Countdown for upcoming */}
       {isUpcoming && (
         <div style={{ margin: '16px', background: 'var(--gradient-hero)', borderRadius: 20, padding: '20px 16px' }}>
-          <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
-            ⏱ Time Until Kickoff
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {['Days', 'Hrs', 'Min', 'Sec'].map((u) => (
-              <div key={u} style={{ flex: 1, background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 6px', textAlign: 'center' }}>
-                <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 28, color: 'white', lineHeight: 1 }}>—</div>
-                <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>{u}</div>
-              </div>
-            ))}
-          </div>
+          <Countdown targetDate={currentMatch.utcDate} label="Time Until Kickoff" />
         </div>
       )}
 

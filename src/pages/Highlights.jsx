@@ -4,6 +4,8 @@ import FlagIcon from '../components/FlagIcon';
 import { HIGHLIGHTS, getSortedHighlights, getYoutubeSearchUrl } from '../data/highlights';
 import { TEAMS } from '../data/teams';
 import { Play, ExternalLink, Eye } from 'lucide-react';
+import { useFixtures } from '../context/FixturesContext';
+import { getMatchStatus } from '../utils/matchUtils';
 
 const YT_RED = '#FF0000';
 
@@ -90,7 +92,13 @@ function HighlightCard({ item }) {
 }
 
 export default function Highlights({ onBack }) {
+  const { fixtures } = useFixtures();
   const sorted = getSortedHighlights();
+
+  const completedHighlights = sorted.filter(item => {
+    const match = fixtures.find(f => f.id === item.matchId);
+    return match && getMatchStatus(match) === 'FT';
+  });
 
   return (
     <div>
@@ -120,11 +128,11 @@ export default function Highlights({ onBack }) {
 
       {/* Count */}
       <div style={{ padding: '4px 16px 8px', fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
-        {sorted.length} highlights available
+        {completedHighlights.length} highlights available
       </div>
 
       {/* Highlight Cards */}
-      {sorted.map(item => (
+      {completedHighlights.map(item => (
         <HighlightCard key={item.id} item={item} />
       ))}
 

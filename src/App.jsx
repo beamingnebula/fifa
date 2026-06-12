@@ -29,6 +29,7 @@ export default function App() {
   });
 
   const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [pwaDismissed, setPwaDismissed] = useLocalStorage('fifa_pwa_dismissed', false);
 
   useEffect(() => {
     const handleInstallPrompt = (e) => {
@@ -172,6 +173,7 @@ export default function App() {
           <Home
             onNavigate={navigate}
             timezoneOffset={settings.timezone}
+            favorites={settings.favorites || []}
           />
         );
       case 'fixtures':
@@ -231,7 +233,7 @@ export default function App() {
         {renderContent()}
       </div>
 
-      {deferredPrompt && (
+      {deferredPrompt && !pwaDismissed && (
         <div style={{
           position: 'fixed',
           bottom: showBottomNav ? 'calc(var(--nav-height) + 16px)' : '16px',
@@ -247,23 +249,24 @@ export default function App() {
           zIndex: 9999,
           animation: 'slideUp 0.3s ease-out',
         }}>
-          <div style={{
-            width: 42, height: 42,
-            borderRadius: 12,
-            background: 'var(--gradient-red)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22,
-            flexShrink: 0
-          }}>
-            🏆
-          </div>
+          <img
+            src="/trophy-192.png"
+            alt="FIFA 2026 App Logo"
+            style={{
+              width: 42,
+              height: 42,
+              borderRadius: 12,
+              objectFit: 'contain',
+              flexShrink: 0
+            }}
+          />
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>Install World Cup App</div>
             <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Get live scores directly on your home screen</div>
           </div>
           <div style={{ display: 'flex', gap: 6 }}>
             <button
-              onClick={() => setDeferredPrompt(null)}
+              onClick={() => setPwaDismissed(true)}
               style={{
                 background: 'transparent',
                 border: 'none',
