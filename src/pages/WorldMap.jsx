@@ -162,6 +162,7 @@ export default function WorldMap({ onBack, onTeamSelect }) {
 
       {/* Interactive SVG Map */}
       <div
+        className="world-map-container"
         style={{
           margin: '8px 16px',
           background: 'var(--bg-card)',

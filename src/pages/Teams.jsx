@@ -132,9 +132,28 @@ export default function Teams({ onBack, onTeamClick, favorites = [], onFavorite 
             ))}
           </div>
 
-          {groupFilter === 'All' ? (
-            Object.keys(GROUPS).map(group => (
-              <div key={group} style={{ margin: '8px 16px 16px', background: 'var(--bg-card)', borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-subtle)' }}>
+          <div className="groups-grid" style={{ padding: '8px 0' }}>
+            {groupFilter === 'All' ? (
+              Object.entries(GROUPS).map(([group]) => (
+                <div key={group} className="group-card">
+                  <div style={{
+                    background: 'var(--gradient-red)',
+                    padding: '10px 16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}>
+                    <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 22, color: 'white', letterSpacing: 1 }}>
+                      Group {group}
+                    </span>
+                  </div>
+                  <div style={{ padding: '4px 0' }}>
+                    <GroupTable group={group} />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="group-card">
                 <div style={{
                   background: 'var(--gradient-red)',
                   padding: '10px 16px',
@@ -143,32 +162,15 @@ export default function Teams({ onBack, onTeamClick, favorites = [], onFavorite 
                   gap: 8,
                 }}>
                   <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 22, color: 'white', letterSpacing: 1 }}>
-                    Group {group}
+                    Group {groupFilter}
                   </span>
                 </div>
                 <div style={{ padding: '4px 0' }}>
-                  <GroupTable group={group} />
+                  <GroupTable group={groupFilter} />
                 </div>
               </div>
-            ))
-          ) : (
-            <div style={{ margin: '8px 16px', background: 'var(--bg-card)', borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-subtle)' }}>
-              <div style={{
-                background: 'var(--gradient-red)',
-                padding: '10px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}>
-                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 22, color: 'white', letterSpacing: 1 }}>
-                  Group {groupFilter}
-                </span>
-              </div>
-              <div style={{ padding: '4px 0' }}>
-                <GroupTable group={groupFilter} />
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 

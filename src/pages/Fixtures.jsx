@@ -139,9 +139,9 @@ export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6, ini
         </>
       ) : (
         /* Groups View */
-        <div style={{ padding: '8px 0' }}>
+        <div className="groups-grid" style={{ padding: '8px 0' }}>
           {Object.keys(GROUPS).map(group => (
-            <div key={group} style={{ margin: '8px 16px', background: 'var(--bg-card)', borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border-subtle)' }}>
+            <div key={group} className="group-card">
               <div style={{
                 background: 'var(--gradient-red)',
                 padding: '10px 16px',
