@@ -29,6 +29,23 @@ export const VENUES = {
   TORONTO:       { id: 'TORONTO',       name: 'BMO Field',                      city: 'Toronto',        country: 'Canada',  capacity: 30000 },
   VANCOUVER:     { id: 'VANCOUVER',     name: 'BC Place',                       city: 'Vancouver',      country: 'Canada',  capacity: 54500 },
   KANSAS_CITY_2: { id: 'KANSAS_CITY_2', name: 'Children\'s Mercy Park',        city: 'Kansas City',    country: 'USA',     capacity: 18467 },
+  HOUSTON:       { id: 'HOUSTON',       name: 'NRG Stadium',                   city: 'Houston',        country: 'USA',     capacity: 72220 },
+};
+
+// Groups re-export for convenience (also defined in teams.js)
+export const GROUPS = {
+  A: ['MEX', 'ZAF', 'KOR', 'CZE'],
+  B: ['CAN', 'BIH', 'QAT', 'SUI'],
+  C: ['BRA', 'HAI', 'MAR', 'SCO'],
+  D: ['USA', 'AUS', 'PAR', 'TUR'],
+  E: ['GER', 'CUW', 'CIV', 'ECU'],
+  F: ['NED', 'JPN', 'SWE', 'TUN'],
+  G: ['BEL', 'EGY', 'IRN', 'NZL'],
+  H: ['ESP', 'CPV', 'KSA', 'URU'],
+  I: ['FRA', 'IRQ', 'NOR', 'SEN'],
+  J: ['ARG', 'ALG', 'AUT', 'JOR'],
+  K: ['POR', 'COD', 'UZB', 'COL'],
+  L: ['ENG', 'CRO', 'GHA', 'PAN'],
 };
 
 // Utility for getting fixture status

@@ -1334,3 +1334,13 @@ h1, h2, h3, h4, h5 {
 @media (min-width: 430px) {
   #root { border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); }
 }
+
+/* Home Quick Search overrides */
+.home-search-container .search-wrapper {
+  position: relative !important;
+  top: auto !important;
+  border-bottom: none !important;
+  background: transparent !important;
+  padding: 0 var(--space-md);
+  z-index: auto !important;
+}

@@ -3,9 +3,9 @@ import FlagIcon from '../components/FlagIcon';
 import MatchCard from '../components/MatchCard';
 import GroupTable from '../components/GroupTable';
 import TopBar from '../components/TopBar';
-import { FIXTURES } from '../data/fixtures';
 import { getMatchResult } from '../utils/matchUtils';
 import { ChevronRight, Trophy, Users, MapPin, Star } from 'lucide-react';
+import { useFixtures } from '../context/FixturesContext';
 
 const CONFEDERATIONS = {
   UEFA: { name: 'UEFA', color: '#003399' },
@@ -18,7 +18,8 @@ const CONFEDERATIONS = {
 
 export default function TeamDetail({ team, onBack, onMatchClick, isFavorite, onFavorite, timezoneOffset = 6 }) {
   if (!team) return null;
-  const teamFixtures = FIXTURES.filter(f => f.home === team.code || f.away === team.code);
+  const { getFixturesByTeam } = useFixtures();
+  const teamFixtures = getFixturesByTeam(team.code);
   const conf = CONFEDERATIONS[team.confederation] || {};
 
   const results = teamFixtures

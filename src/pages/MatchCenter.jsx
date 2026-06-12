@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import TopBar from '../components/TopBar';
 import MatchCard from '../components/MatchCard';
-import { FIXTURES } from '../data/fixtures';
 import { getMatchStatus } from '../utils/matchUtils';
 import { Activity, Clock } from 'lucide-react';
+import { useFixtures } from '../context/FixturesContext';
 
 export default function MatchCenter({ onBack, onMatchClick, timezoneOffset = 6 }) {
+  const { fixtures } = useFixtures();
   const [filter, setFilter] = useState('All');
 
-  const live = FIXTURES.filter(f => getMatchStatus(f) === 'LIVE');
-  const completed = FIXTURES.filter(f => getMatchStatus(f) === 'FT').reverse();
-  const upcoming = FIXTURES.filter(f => getMatchStatus(f) === 'UPCOMING').slice(0, 20);
+  const live = fixtures.filter(f => getMatchStatus(f) === 'LIVE');
+  const completed = fixtures.filter(f => getMatchStatus(f) === 'FT').reverse();
+  const upcoming = fixtures.filter(f => getMatchStatus(f) === 'UPCOMING').slice(0, 20);
 
   const tabs = [
-    { id: 'All',      label: `All (${FIXTURES.length})` },
+    { id: 'All',      label: `All (${fixtures.length})` },
     { id: 'LIVE',     label: `Live (${live.length})` },
     { id: 'FT',       label: `Finished (${completed.length})` },
     { id: 'UPCOMING', label: `Upcoming (${upcoming.length})` },

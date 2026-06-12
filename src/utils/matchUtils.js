@@ -4,6 +4,7 @@ import { TEAMS } from '../data/teams.js';
 import { VENUES } from '../data/fixtures.js';
 
 export const getMatchStatus = (match) => {
+  if (match.status) return match.status;
   if (match.homeScore !== null && match.awayScore !== null) return 'FT';
   const now = new Date();
   const kickoff = new Date(match.utcDate);

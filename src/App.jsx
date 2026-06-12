@@ -1,122 +1,308 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import React, { useState, useEffect } from 'react';
+import BottomNav from './components/BottomNav';
+import Home from './pages/Home';
+import Fixtures from './pages/Fixtures';
+import Teams from './pages/Teams';
+import TeamDetail from './pages/TeamDetail';
+import MatchCenter from './pages/MatchCenter';
+import MatchDetail from './pages/MatchDetail';
+import Highlights from './pages/Highlights';
+import WorldMap from './pages/WorldMap';
+import Settings from './pages/Settings';
+import MatchesPlayed from './pages/MatchesPlayed';
+import MatchesRemaining from './pages/MatchesRemaining';
+import { useLocalStorage } from './hooks/useLocalStorage';
+import { getMatchStatus } from './utils/matchUtils';
+import { useFixtures } from './context/FixturesContext';
 
-function App() {
-  const [count, setCount] = useState(0)
+const MAIN_TABS = ['home', 'fixtures', 'teams', 'matches', 'highlights', 'worldmap', 'settings'];
+
+export default function App() {
+  const { fixtures } = useFixtures();
+  const [settings, setSettings] = useLocalStorage('fifa_settings', {
+    darkMode: false,
+    timezone: 6, // BST
+    favorites: [],
+    notifications: true,
+    matchReminders: true,
+    goalAlerts: true,
+  });
+
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handleInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to install prompt: ${outcome}`);
+    setDeferredPrompt(null);
+  };
+
+  const [activeTab, setActiveTab] = useState('home');
+  const [stack, setStack] = useState([]); // navigation stack
+  const [selectedMatch, setSelectedMatch] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [fixturesSearch, setFixturesSearch] = useState('');
+  const [fixturesFocusSearch, setFixturesFocusSearch] = useState(false);
+
+  const liveCount = fixtures.filter(f => getMatchStatus(f) === 'LIVE').length;
+
+  // Apply dark mode
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', settings.darkMode ? 'dark' : 'light');
+  }, [settings.darkMode]);
+
+  // Navigation helpers
+  const navigate = (tab, data = null) => {
+    if (tab === 'match-detail') {
+      setSelectedMatch(data);
+      setStack(prev => [...prev, { type: 'match-detail' }]);
+      return;
+    }
+    if (tab === 'team-detail') {
+      setSelectedTeam(data);
+      setStack(prev => [...prev, { type: 'team-detail' }]);
+      return;
+    }
+    if (tab === 'matches-played') {
+      setStack(prev => [...prev, { type: 'matches-played' }]);
+      return;
+    }
+    if (tab === 'matches-remaining') {
+      setStack(prev => [...prev, { type: 'matches-remaining' }]);
+      return;
+    }
+    if (MAIN_TABS.includes(tab)) {
+      setActiveTab(tab);
+      setStack([]);
+      setSelectedMatch(null);
+      setSelectedTeam(null);
+      if (tab === 'fixtures') {
+        setFixturesSearch(data?.search || '');
+        setFixturesFocusSearch(!!data?.focusSearch);
+      } else {
+        setFixturesSearch('');
+        setFixturesFocusSearch(false);
+      }
+    }
+  };
+
+  const goBack = () => {
+    if (stack.length > 0) {
+      setStack(prev => prev.slice(0, -1));
+      const prev = stack[stack.length - 1];
+      if (prev?.type === 'match-detail') setSelectedMatch(null);
+      if (prev?.type === 'team-detail') setSelectedTeam(null);
+    }
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    setStack([]);
+    setSelectedMatch(null);
+    setSelectedTeam(null);
+    setFixturesSearch('');
+    setFixturesFocusSearch(false);
+  };
+
+  const handleFavorite = (code) => {
+    const favs = settings.favorites || [];
+    const newFavs = favs.includes(code) ? favs.filter(f => f !== code) : [...favs, code];
+    setSettings({ ...settings, favorites: newFavs });
+  };
+
+  // Determine current view
+  const currentStack = stack[stack.length - 1];
+
+  const renderContent = () => {
+    // Detail pages (on stack)
+    if (currentStack?.type === 'match-detail' && selectedMatch) {
+      return (
+        <MatchDetail
+          match={selectedMatch}
+          onBack={goBack}
+          timezoneOffset={settings.timezone}
+        />
+      );
+    }
+    if (currentStack?.type === 'team-detail' && selectedTeam) {
+      return (
+        <TeamDetail
+          team={selectedTeam}
+          onBack={goBack}
+          onMatchClick={(m) => navigate('match-detail', m)}
+          isFavorite={settings.favorites?.includes(selectedTeam.code)}
+          onFavorite={handleFavorite}
+          timezoneOffset={settings.timezone}
+        />
+      );
+    }
+    if (currentStack?.type === 'matches-played') {
+      return (
+        <MatchesPlayed
+          onBack={goBack}
+          onMatchClick={(m) => navigate('match-detail', m)}
+          timezoneOffset={settings.timezone}
+        />
+      );
+    }
+    if (currentStack?.type === 'matches-remaining') {
+      return (
+        <MatchesRemaining
+          onBack={goBack}
+          onMatchClick={(m) => navigate('match-detail', m)}
+          timezoneOffset={settings.timezone}
+        />
+      );
+    }
+
+    // Main tabs
+    switch (activeTab) {
+      case 'home':
+        return (
+          <Home
+            onNavigate={navigate}
+            timezoneOffset={settings.timezone}
+          />
+        );
+      case 'fixtures':
+        return (
+          <Fixtures
+            onBack={null}
+            onMatchClick={(m) => navigate('match-detail', m)}
+            timezoneOffset={settings.timezone}
+            initialSearch={fixturesSearch}
+            autoFocusSearch={fixturesFocusSearch}
+          />
+        );
+      case 'teams':
+        return (
+          <Teams
+            onBack={null}
+            onTeamClick={(t) => navigate('team-detail', t)}
+            favorites={settings.favorites || []}
+            onFavorite={handleFavorite}
+          />
+        );
+      case 'matches':
+        return (
+          <MatchCenter
+            onBack={null}
+            onMatchClick={(m) => navigate('match-detail', m)}
+            timezoneOffset={settings.timezone}
+          />
+        );
+      case 'highlights':
+        return <Highlights onBack={null} />;
+      case 'worldmap':
+        return (
+          <WorldMap
+            onBack={null}
+            onTeamSelect={(t) => navigate('team-detail', t)}
+          />
+        );
+      case 'settings':
+        return (
+          <Settings
+            onBack={null}
+            settings={settings}
+            onSettingsChange={setSettings}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
+  const showBottomNav = !currentStack; // hide bottom nav on detail pages
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app-layout">
+      <div className="page-content" style={{ paddingBottom: showBottomNav ? 'var(--nav-height)' : 0 }}>
+        {renderContent()}
+      </div>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {deferredPrompt && (
+        <div style={{
+          position: 'fixed',
+          bottom: showBottomNav ? 'calc(var(--nav-height) + 16px)' : '16px',
+          left: 16, right: 16,
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 20,
+          padding: '14px 18px',
+          boxShadow: 'var(--shadow-lg)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
+          zIndex: 9999,
+          animation: 'slideUp 0.3s ease-out',
+        }}>
+          <div style={{
+            width: 42, height: 42,
+            borderRadius: 12,
+            background: 'var(--gradient-red)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22,
+            flexShrink: 0
+          }}>
+            🏆
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>Install World Cup App</div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Get live scores directly on your home screen</div>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              onClick={() => setDeferredPrompt(null)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                fontSize: 11,
+                fontWeight: 600,
+                padding: '6px 10px',
+                cursor: 'pointer'
+              }}
+            >
+              Later
+            </button>
+            <button
+              onClick={handleInstallClick}
+              style={{
+                background: 'var(--fifa-red)',
+                border: 'none',
+                borderRadius: 16,
+                color: 'white',
+                fontSize: 11,
+                fontWeight: 700,
+                padding: '6px 14px',
+                cursor: 'pointer',
+                boxShadow: '0 2px 8px rgba(200, 16, 46, 0.3)'
+              }}
+            >
+              Install
+            </button>
+          </div>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      )}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {showBottomNav && (
+        <BottomNav
+          activeTab={activeTab}
+          onTabChange={handleTabChange}
+          liveCount={liveCount}
+        />
+      )}
+    </div>
+  );
 }
-
-export default App

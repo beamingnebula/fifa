@@ -1,12 +1,13 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import TopBar from '../components/TopBar';
 import SearchBar from '../components/SearchBar';
 import MatchCard from '../components/MatchCard';
 import GroupTable from '../components/GroupTable';
-import { FIXTURES, GROUPS } from '../data/fixtures';
+import { GROUPS } from '../data/fixtures';
 import { TEAMS } from '../data/teams';
 import { getMatchStatus, getStageName } from '../utils/matchUtils';
 import { formatDate } from '../utils/timeUtils';
+import { useFixtures } from '../context/FixturesContext';
 
 const STAGES = ['All', 'Group Stage', 'Round of 32', 'Round of 16', 'Quarter-finals', 'Semi-finals', 'Final'];
 const STAGE_MAP = {
@@ -20,13 +21,18 @@ const STAGE_MAP = {
 
 const VIEWS = ['Matches', 'Groups'];
 
-export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6 }) {
-  const [search, setSearch] = useState('');
+export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6, initialSearch = '', autoFocusSearch = false }) {
+  const { fixtures } = useFixtures();
+  const [search, setSearch] = useState(initialSearch);
   const [stageFilter, setStageFilter] = useState('All');
   const [view, setView] = useState('Matches');
 
+  useEffect(() => {
+    setSearch(initialSearch);
+  }, [initialSearch]);
+
   const filtered = useMemo(() => {
-    let list = FIXTURES;
+    let list = fixtures;
     if (stageFilter !== 'All') {
       const stageCode = STAGE_MAP[stageFilter];
       list = list.filter(f => f.stage === stageCode);
@@ -84,7 +90,7 @@ export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6 }) {
 
       {view === 'Matches' ? (
         <>
-          <SearchBar value={search} onChange={setSearch} placeholder="Search teams..." />
+          <SearchBar value={search} onChange={setSearch} placeholder="Search teams..." autoFocus={autoFocusSearch} />
           {/* Stage Filters */}
           <div className="filter-chips">
             {STAGES.map(s => (
@@ -152,7 +158,7 @@ export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6 }) {
               </div>
               {/* Group fixtures */}
               <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '4px 0' }}>
-                {FIXTURES.filter(f => f.group === group).map(m => (
+                {fixtures.filter(f => f.group === group).map(m => (
                   <div
                     key={m.id}
                     onClick={() => onMatchClick?.(m)}
