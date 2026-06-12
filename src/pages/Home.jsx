@@ -189,13 +189,14 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
             onClick={() => onNavigate('match-detail', nextMatch)}
             style={{ cursor: 'pointer' }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 1 }}>
-                ⚽ Next Match
-              </span>
-              {nextMatch.group && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 16 }}>
+              {nextMatch.group ? (
                 <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: 20 }}>
                   Group {nextMatch.group}
+                </span>
+              ) : (
+                <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: 20 }}>
+                  {nextMatch.stage}
                 </span>
               )}
             </div>

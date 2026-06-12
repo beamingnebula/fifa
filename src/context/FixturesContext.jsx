@@ -23,6 +23,73 @@ const getEspnStatus = (state, displayClock) => {
   return 'UPCOMING';
 };
 
+// Parse competitor stats and yellow/red cards from ESPN response
+const extractStats = (comp, homeCode) => {
+  if (!comp) return null;
+  const homeComp = comp.competitors?.find(c => c.homeAway === 'home');
+  const awayComp = comp.competitors?.find(c => c.homeAway === 'away');
+  
+  if (!homeComp || !awayComp) return null;
+
+  const isHomeCompHomeTeam = mapTeamCode(homeComp.team?.abbreviation) === homeCode;
+  const localHomeComp = isHomeCompHomeTeam ? homeComp : awayComp;
+  const localAwayComp = isHomeCompHomeTeam ? awayComp : homeComp;
+
+  const getStatVal = (competitor, name) => {
+    const stat = competitor?.statistics?.find(s => s.name === name);
+    return stat ? parseFloat(stat.displayValue) : 0;
+  };
+
+  const possession = [
+    getStatVal(localHomeComp, 'possessionPct') || 50,
+    getStatVal(localAwayComp, 'possessionPct') || 50
+  ];
+  const shots = [
+    getStatVal(localHomeComp, 'totalShots') || 0,
+    getStatVal(localAwayComp, 'totalShots') || 0
+  ];
+  const shotsOnTarget = [
+    getStatVal(localHomeComp, 'shotsOnTarget') || 0,
+    getStatVal(localAwayComp, 'shotsOnTarget') || 0
+  ];
+  const corners = [
+    getStatVal(localHomeComp, 'wonCorners') || 0,
+    getStatVal(localAwayComp, 'wonCorners') || 0
+  ];
+  const fouls = [
+    getStatVal(localHomeComp, 'foulsCommitted') || 0,
+    getStatVal(localAwayComp, 'foulsCommitted') || 0
+  ];
+
+  let homeYellow = 0;
+  let homeRed = 0;
+  let awayYellow = 0;
+  let awayRed = 0;
+
+  comp.details?.forEach(detail => {
+    const detailTeamAbbr = detail.team?.abbreviation || (detail.team?.id === homeComp.team?.id ? homeComp.team?.abbreviation : awayComp.team?.abbreviation);
+    const detailCode = mapTeamCode(detailTeamAbbr);
+    const isHome = detailCode === homeCode;
+    
+    if (detail.yellowCard) {
+      if (isHome) homeYellow++; else awayYellow++;
+    }
+    if (detail.redCard) {
+      if (isHome) homeRed++; else awayRed++;
+    }
+  });
+
+  return {
+    possession,
+    shots,
+    shotsOnTarget,
+    corners,
+    fouls,
+    yellowCards: [homeYellow, awayYellow],
+    redCards: [homeRed, awayRed]
+  };
+};
+
 export function FixturesProvider({ children }) {
   const [fixtures, setFixtures] = useState(() => {
     const cached = localStorage.getItem('fifa_live_fixtures');
@@ -85,6 +152,7 @@ export function FixturesProvider({ children }) {
             staticMatch.status = getEspnStatus(state, comp.status?.displayClock);
             staticMatch.clock = staticMatch.status === 'LIVE' ? comp.status?.displayClock : null;
             staticMatch.utcDate = event.date || staticMatch.utcDate;
+            staticMatch.stats = isStarted ? extractStats(comp, staticMatch.home) : null;
           }
         }
       });
@@ -171,6 +239,7 @@ export function FixturesProvider({ children }) {
           resolvedFixture.status = getEspnStatus(state, comp?.status?.displayClock);
           resolvedFixture.clock = resolvedFixture.status === 'LIVE' ? comp?.status?.displayClock : null;
           resolvedFixture.utcDate = matchedEvent.date || resolvedFixture.utcDate;
+          resolvedFixture.stats = isStarted ? extractStats(comp, resolvedFixture.home) : null;
         }
         
         return resolvedFixture;
@@ -194,13 +263,25 @@ export function FixturesProvider({ children }) {
   useEffect(() => {
     refresh();
     
-    // Check if any match is currently live
-    const hasLiveMatch = fixtures.some(f => f.status === 'LIVE');
-    const intervalTime = hasLiveMatch ? 30000 : 180000; // 30s for live, 3m otherwise
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refresh();
+      }
+    };
     
-    const interval = setInterval(refresh, intervalTime);
-    return () => clearInterval(interval);
-  }, [refresh, fixtures]);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        refresh();
+      }
+    }, 30000); // Poll every 30 seconds
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [refresh]);
 
   // Derived helper methods
   const getFixturesByGroup = useCallback((group) => fixtures.filter(f => f.group === group), [fixtures]);

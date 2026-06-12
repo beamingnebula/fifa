@@ -181,6 +181,29 @@ export default function Settings({ onBack, settings, onSettingsChange }) {
         </div>
       </div>
 
+      {/* Credits */}
+      <div style={{ padding: '8px 16px 4px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)' }}>
+        Credits
+      </div>
+      <div className="settings-group">
+        <a
+          href="https://github.com/beamingnebula"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="settings-row"
+          style={{ textDecoration: 'none', color: 'inherit', display: 'flex', width: '100%' }}
+        >
+          <div className="settings-icon" style={{ background: 'rgba(99,102,241,0.1)', color: '#6366F1' }}>
+            <Heart size={18} fill="#6366F1" />
+          </div>
+          <div className="settings-label-group" style={{ flex: 1 }}>
+            <div className="settings-label">Developed by beamingnebula</div>
+            <div className="settings-sub">Follow on GitHub @beamingnebula</div>
+          </div>
+          <ChevronRight size={16} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+        </a>
+      </div>
+
       <div style={{ padding: '24px 16px', textAlign: 'center', fontSize: 11, color: 'var(--text-muted)' }}>
         FIFA World Cup 2026™ Companion App<br />
         Tournament: June 11 – July 19, 2026<br />

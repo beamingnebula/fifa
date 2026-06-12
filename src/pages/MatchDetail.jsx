@@ -24,8 +24,18 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
   const homeTeam = TEAMS[currentMatch.home] || { name: currentMatch.home, flag: 'un' };
   const awayTeam = TEAMS[currentMatch.away] || { name: currentMatch.away, flag: 'un' };
 
-  // Simulated stats for played matches
-  const stats = isFT || isLive ? {
+  React.useEffect(() => {
+    if (!isLive) return;
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        refresh();
+      }
+    }, 10000); // Poll every 10 seconds for live match details
+    return () => clearInterval(interval);
+  }, [isLive, refresh]);
+
+  // Use real statistics if parsed from API, otherwise fall back to simulated/default stats for demo purposes
+  const stats = currentMatch.stats || (isFT || isLive ? {
     possession: [54, 46],
     shots: [14, 9],
     shotsOnTarget: [6, 3],
@@ -33,7 +43,7 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
     fouls: [11, 13],
     yellowCards: [1, 2],
     redCards: [0, 0],
-  } : null;
+  } : null);
 
   const StatRow = ({ label, home, away, max }) => {
     const homeWidth = max ? (home / max) * 50 : (home / (home + away || 1)) * 50;

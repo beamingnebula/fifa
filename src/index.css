@@ -1269,17 +1269,6 @@ h1, h2, h3, h4, h5 {
   overflow: hidden;
 }
 
-.next-match-card::before {
-  content: '⚽ NEXT MATCH';
-  position: absolute;
-  top: var(--space-md);
-  right: var(--space-md);
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.5);
-}
-
 /* ===== PAGE TRANSITIONS ===== */
 .page-enter { animation: slideInRight 0.3s ease forwards; }
 .page-exit { animation: fadeIn 0.2s ease reverse; }
