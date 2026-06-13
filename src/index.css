@@ -216,7 +216,7 @@ h1, h2, h3, h4, h5 {
 /* ===== HERO SECTION ===== */
 .hero-section {
   background: var(--gradient-hero);
-  padding: var(--space-xl) var(--space-md) var(--space-xl);
+  padding: var(--space-xl) var(--space-md) 0;
   position: relative;
   overflow: hidden;
 }
@@ -411,6 +411,7 @@ h1, h2, h3, h4, h5 {
   padding: 0 var(--space-md);
   box-sizing: border-box;
   margin-top: var(--space-lg);
+  margin-bottom: -24px;
   position: relative;
   z-index: 10;
 }
@@ -1011,7 +1012,7 @@ h1, h2, h3, h4, h5 {
   }
 
   .hero-section {
-    padding: 40px 0 40px;
+    padding: 40px 0 0;
   }
 
   .hero-content-wrapper {
@@ -1024,7 +1025,7 @@ h1, h2, h3, h4, h5 {
 
   .stats-strip-wrapper {
     max-width: 1200px;
-    margin: var(--space-lg) auto 0;
+    margin: var(--space-lg) auto -24px;
     padding: 0 var(--space-lg);
     box-sizing: border-box;
   }
@@ -1032,7 +1033,7 @@ h1, h2, h3, h4, h5 {
   .home-content-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 var(--space-lg) var(--space-lg);
+    padding: 32px var(--space-lg) var(--space-lg);
     box-sizing: border-box;
   }
 
@@ -1054,7 +1055,7 @@ h1, h2, h3, h4, h5 {
 
 .home-content-container {
   width: 100%;
-  padding: 0 var(--space-md) var(--space-lg);
+  padding: 32px var(--space-md) var(--space-lg);
   box-sizing: border-box;
 }
 
