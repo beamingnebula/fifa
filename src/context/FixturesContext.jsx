@@ -220,8 +220,10 @@ export function FixturesProvider({ children }) {
               staticMatch.homeScore = Number(staticIsHome ? homeComp.score : awayComp.score);
               staticMatch.awayScore = Number(staticIsHome ? awayComp.score : homeComp.score);
             } else {
-              staticMatch.homeScore = null;
-              staticMatch.awayScore = null;
+              // Preserve static scores if present
+              const orig = FIXTURES.find(x => x.id === staticMatch.id);
+              staticMatch.homeScore = orig ? orig.homeScore : null;
+              staticMatch.awayScore = orig ? orig.awayScore : null;
             }
             staticMatch.status = getEspnStatus(state, comp.status?.displayClock);
             staticMatch.clock = staticMatch.status === 'LIVE' ? comp.status?.displayClock : null;
@@ -300,8 +302,9 @@ export function FixturesProvider({ children }) {
             resolvedFixture.homeScore = Number(staticIsHome ? homeComp.score : awayComp.score);
             resolvedFixture.awayScore = Number(staticIsHome ? awayComp.score : homeComp.score);
           } else {
-            resolvedFixture.homeScore = null;
-            resolvedFixture.awayScore = null;
+            // Keep static simulated completed scores if not overwritten by a live/real post game
+            resolvedFixture.homeScore = f.homeScore;
+            resolvedFixture.awayScore = f.awayScore;
           }
           
           // Overwrite actual team codes if they were placeholders

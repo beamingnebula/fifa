@@ -91,61 +91,64 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
     <div>
       {/* ===== HERO ===== */}
       <div className="hero-section" style={{ background: getAdaptiveGradient() }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, position: 'relative', zIndex: 1 }}>
-          <div>
-            <div className="hero-badge">
-              🏆 FIFA World Cup 2026™
-            </div>
-            <div className="hero-title">FIFA WORLD<br />CUP 2026</div>
-            <div className="hero-subtitle">Canada · Mexico · United States</div>
-            {lastUpdated && (
-              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
-                <span className="live-dot" style={{ display: liveMatches.length > 0 ? 'inline-block' : 'none', width: 6, height: 6, margin: 0 }} />
-                Last updated: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+        {/* Hologram typography background effect */}
+        <div className="hero-hologram-bg">FIFAX</div>
+        
+        <div className="hero-content-wrapper">
+          <div className="hero-text-side">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
+              <div>
+                <div className="hero-badge">
+                  🏆 FIFA World Cup 2026™
+                </div>
+                <div className="hero-title">FIFA WORLD<br />CUP 2026</div>
+                <div className="hero-subtitle">Canada · Mexico · United States</div>
+                {lastUpdated && (
+                  <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)', marginTop: 6, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+                    <span className="live-dot" style={{ display: liveMatches.length > 0 ? 'inline-block' : 'none', width: 6, height: 6, margin: 0 }} />
+                    Last updated: {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  </div>
+                )}
               </div>
-            )}
+              <button
+                onClick={handleRefresh}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '50%',
+                  width: 36, height: 36,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', color: 'white', marginTop: 8,
+                  transition: 'all 0.2s',
+                  flexShrink: 0
+                }}
+                aria-label="Refresh"
+              >
+                <RefreshCw size={16} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
+              </button>
+            </div>
           </div>
-          <button
-            onClick={handleRefresh}
-            style={{
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.2)',
-              borderRadius: '50%',
-              width: 36, height: 36,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: 'white', marginTop: 8,
-              transition: 'all 0.2s',
-            }}
-            aria-label="Refresh"
-          >
-            <RefreshCw size={16} style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
-          </button>
+          
+          <div className="hero-countdown-side">
+            <Countdown />
+          </div>
         </div>
-        <Countdown />
       </div>
 
       {/* ===== STATS STRIP ===== */}
-      <div style={{ padding: '0 16px', marginTop: -24, position: 'relative', zIndex: 10 }}>
-        <div style={{
-          display: 'flex',
-          background: 'var(--bg-secondary)',
-          borderRadius: 20,
-          boxShadow: 'var(--shadow-lg)',
-          border: '1px solid var(--border-subtle)',
-        }}>
-          <div className="stat-item" onClick={() => onNavigate('fixtures')}>
-            <span className="stat-number">{TOTAL_MATCHES}</span>
-            <span className="stat-label">Total</span>
-          </div>
-          <div className="stat-item" onClick={() => onNavigate('matches-played')} style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--gradient-red)', borderRadius: '0 0 0 0', opacity: 0 }} />
-            <span className="stat-number red">{completed.length}</span>
-            <span className="stat-label">Played</span>
-          </div>
-          <div className="stat-item" onClick={() => onNavigate('matches-remaining')}>
-            <span className="stat-number gold">{upcoming.length}</span>
-            <span className="stat-label">Remaining</span>
-          </div>
+      <div className="stats-strip">
+        <div className="stat-item" onClick={() => onNavigate('fixtures')}>
+          <span className="stat-number">{TOTAL_MATCHES}</span>
+          <span className="stat-label">Total</span>
+        </div>
+        <div className="stat-item" onClick={() => onNavigate('matches-played')} style={{ position: 'relative' }}>
+          <span style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--gradient-red)', borderRadius: '0 0 0 0', opacity: 0 }} />
+          <span className="stat-number red">{completed.length}</span>
+          <span className="stat-label">Played</span>
+        </div>
+        <div className="stat-item" onClick={() => onNavigate('matches-remaining')}>
+          <span className="stat-number gold">{upcoming.length}</span>
+          <span className="stat-label">Remaining</span>
         </div>
       </div>
 
