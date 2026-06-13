@@ -5,7 +5,7 @@ import MatchCard from '../components/MatchCard';
 import FlagIcon from '../components/FlagIcon';
 import SearchBar from '../components/SearchBar';
 import { TEAMS } from '../data/teams';
-import { isToday, formatKickoff, formatDate } from '../utils/timeUtils';
+import { isToday, formatKickoff, formatDate, getTimezoneAbbr } from '../utils/timeUtils';
 import { getMatchStatus } from '../utils/matchUtils';
 import { useFixtures } from '../context/FixturesContext';
 
@@ -32,6 +32,22 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
   const liveMatches = fixtures.filter(f => getMatchStatus(f) === 'LIVE');
   const nextMatch = getNextFixture();
   const featuredMatch = liveMatches[0] || completed[completed.length - 1];
+
+  const getAdaptiveGradient = () => {
+    if (liveMatches.length > 0) {
+      const match = liveMatches[0];
+      const c1 = TEAMS[match.home]?.color || '#C8102E';
+      const c2 = TEAMS[match.away]?.color || '#1a1a3e';
+      return `linear-gradient(135deg, #0D0D1A 0%, ${c2} 50%, ${c1} 100%)`;
+    }
+    if (favorites && favorites.length > 0) {
+      const favColor = TEAMS[favorites[0]]?.color;
+      if (favColor) {
+        return `linear-gradient(135deg, #0D0D1A 0%, #1a1a3e 50%, ${favColor} 100%)`;
+      }
+    }
+    return 'linear-gradient(135deg, #0D0D1A 0%, #1a1a3e 40%, #C8102E 100%)';
+  };
 
   const getDaysLeft = (dateString) => {
     const diff = new Date(dateString) - new Date();
@@ -74,7 +90,7 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
   return (
     <div>
       {/* ===== HERO ===== */}
-      <div className="hero-section">
+      <div className="hero-section" style={{ background: getAdaptiveGradient() }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12, position: 'relative', zIndex: 1 }}>
           <div>
             <div className="hero-badge">
@@ -228,7 +244,7 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
                       {formatKickoff(nextMatch.utcDate, timezoneOffset)}
                     </div>
                     <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-                      {formatDate(nextMatch.utcDate, timezoneOffset)} BST
+                      {formatDate(nextMatch.utcDate, timezoneOffset)} {getTimezoneAbbr(timezoneOffset)}
                     </div>
                   </div>
                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>

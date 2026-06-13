@@ -14,14 +14,15 @@ import MatchesRemaining from './pages/MatchesRemaining';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { getMatchStatus } from './utils/matchUtils';
 import { useFixtures } from './context/FixturesContext';
+import { getBrowserTimezoneOffset } from './utils/timeUtils';
 
 const MAIN_TABS = ['home', 'fixtures', 'teams', 'matches', 'highlights', 'worldmap', 'settings'];
 
 export default function App() {
-  const { fixtures } = useFixtures();
+  const { fixtures, toasts = [], dismissToast } = useFixtures();
   const [settings, setSettings] = useLocalStorage('fifa_settings', {
     darkMode: false,
-    timezone: 6, // BST
+    timezone: getBrowserTimezoneOffset(), // Automatically detected local timezone
     favorites: [],
     notifications: true,
     matchReminders: true,
@@ -306,6 +307,71 @@ export default function App() {
           liveCount={liveCount}
         />
       )}
+
+      {/* Toast Notification Container */}
+      <div style={{
+        position: 'fixed',
+        top: 20,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 10000,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        width: 'calc(100% - 32px)',
+        maxWidth: 400,
+        pointerEvents: 'none',
+      }}>
+        {toasts.map(toast => (
+          <div
+            key={toast.id}
+            onClick={() => {
+              dismissToast(toast.id);
+              if (toast.match) navigate('match-detail', toast.match);
+            }}
+            className="toast-item"
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 16,
+              padding: '12px 16px',
+              boxShadow: 'var(--shadow-lg)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <div style={{
+              position: 'absolute',
+              left: 0, top: 0, bottom: 0,
+              width: 4,
+              background: toast.type === 'GOAL' ? 'var(--fifa-red)' : toast.type === 'KICKOFF' ? 'var(--fifa-gold)' : 'var(--text-secondary)',
+            }} />
+            
+            <div style={{ flex: 1, paddingLeft: 6 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)' }}>{toast.title}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>{toast.body}</div>
+            </div>
+            
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                dismissToast(toast.id);
+              }}
+              style={{
+                background: 'none', border: 'none', color: 'var(--text-muted)',
+                cursor: 'pointer', fontSize: 16, fontWeight: 700, padding: 4
+              }}
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

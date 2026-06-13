@@ -5,7 +5,7 @@ import { HIGHLIGHTS, getSortedHighlights, getYoutubeSearchUrl } from '../data/hi
 import { TEAMS } from '../data/teams';
 import { Play, ExternalLink, Eye } from 'lucide-react';
 import { useFixtures } from '../context/FixturesContext';
-import { getMatchStatus } from '../utils/matchUtils';
+import { getMatchStatus, getStageName } from '../utils/matchUtils';
 
 const YT_RED = '#FF0000';
 
@@ -93,12 +93,46 @@ function HighlightCard({ item }) {
 
 export default function Highlights({ onBack }) {
   const { fixtures } = useFixtures();
-  const sorted = getSortedHighlights();
 
-  const completedHighlights = sorted.filter(item => {
-    const match = fixtures.find(f => f.id === item.matchId);
-    return match && getMatchStatus(match) === 'FT';
-  });
+  const completedHighlights = React.useMemo(() => {
+    // 1. Get completed matches from fixtures
+    const completedMatches = fixtures.filter(f => getMatchStatus(f) === 'FT' || f.homeScore !== null);
+
+    // 2. Map completed matches to highlight entries
+    const items = completedMatches.map(match => {
+      // Find if we have static highlight data
+      const staticHighlight = HIGHLIGHTS.find(h => h.matchId === match.id);
+      if (staticHighlight) {
+        return {
+          ...staticHighlight,
+          score: `${match.homeScore}-${match.awayScore}`
+        };
+      }
+
+      // Otherwise dynamically create one!
+      const homeName = TEAMS[match.home]?.name || match.home;
+      const awayName = TEAMS[match.away]?.name || match.away;
+      const stageName = match.group ? `Group ${match.group}` : getStageName(match.stage);
+
+      return {
+        id: `dynamic-h-${match.id}`,
+        matchId: match.id,
+        title: `${homeName} vs ${awayName} — ${stageName} Highlights`,
+        teams: [match.home, match.away],
+        score: `${match.homeScore}-${match.awayScore}`,
+        date: match.utcDate.substring(0, 10),
+        duration: '5:00',
+        thumbnail: 'https://img.youtube.com/vi/default/maxresdefault.jpg',
+        youtubeQuery: `${homeName} vs ${awayName} FIFA World Cup 2026 Highlights`,
+        youtubeId: null,
+        channel: 'FIFA',
+        views: '1.2M',
+      };
+    });
+
+    // Sort items by date descending
+    return items.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [fixtures]);
 
   return (
     <div>

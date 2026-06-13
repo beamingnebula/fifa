@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin, Clock } from 'lucide-react';
 import FlagIcon from './FlagIcon';
-import { formatDateTime, formatKickoff, formatDate } from '../utils/timeUtils';
+import { formatDateTime, formatKickoff, formatDate, getTimezoneAbbr } from '../utils/timeUtils';
 import { getMatchStatus, getVenueById, getStageName } from '../utils/matchUtils';
 import { TEAMS } from '../data/teams';
 
@@ -69,7 +69,7 @@ export default function MatchCard({ match, onClick, featured = false, timezoneOf
                 {formatKickoff(match.utcDate, timezoneOffset)}
               </div>
               <div style={{ fontSize: 10, color: featured ? 'rgba(255,255,255,0.5)' : 'var(--text-muted)', fontWeight: 600 }}>
-                BST
+                {getTimezoneAbbr(timezoneOffset)}
               </div>
             </div>
           )}

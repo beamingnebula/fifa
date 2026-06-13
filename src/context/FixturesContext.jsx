@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { FIXTURES, GROUPS } from '../data/fixtures';
+import { TEAMS } from '../data/teams';
 import { getGroupStandings } from '../utils/matchUtils';
 
 const FixturesContext = createContext(null);
@@ -102,6 +103,79 @@ export function FixturesProvider({ children }) {
     const cached = localStorage.getItem('fifa_fixtures_last_updated');
     return cached ? new Date(cached) : null;
   });
+
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = useCallback((toast) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setToasts(prev => [...prev, { id, ...toast, timestamp: Date.now() }]);
+    
+    setTimeout(() => {
+      dismissToast(id);
+    }, 6000);
+  }, []);
+
+  const dismissToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const triggerNotification = useCallback(({ type, title, body, match }) => {
+    const settings = JSON.parse(localStorage.getItem('fifa_settings') || '{}');
+    if (settings.notifications === false) return;
+    if (type === 'GOAL' && settings.goalAlerts === false) return;
+    if (type === 'KICKOFF' && settings.matchReminders === false) return;
+
+    addToast({ type, title, body, match });
+
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(title, {
+          body,
+          icon: '/trophy.svg'
+        });
+      } catch (e) {
+        console.warn('System notifications failed: ', e);
+      }
+    }
+  }, [addToast]);
+
+  const simulateEvent = useCallback((eventType) => {
+    const mockMatch = {
+      id: 'D1',
+      stage: 'GROUP',
+      group: 'D',
+      home: 'USA',
+      away: 'AUS',
+      homeScore: 3,
+      awayScore: 1,
+      utcDate: '2026-06-13T21:00:00Z',
+      venue: 'LOS_ANGELES',
+      status: 'LIVE'
+    };
+
+    if (eventType === 'KICKOFF') {
+      triggerNotification({
+        type: 'KICKOFF',
+        title: '⚽ Match Started! (Simulation)',
+        body: 'USA vs Australia has kicked off!',
+        match: mockMatch
+      });
+    } else if (eventType === 'GOAL') {
+      triggerNotification({
+        type: 'GOAL',
+        title: '⚽ GOAL! United States (Simulation)',
+        body: 'USA 4 - 1 Australia (Pulisic 72\')',
+        match: mockMatch
+      });
+    } else if (eventType === 'FULL_TIME') {
+      triggerNotification({
+        type: 'FULL_TIME',
+        title: '🏁 Match Finished! (Simulation)',
+        body: 'Full Time: USA 3 - 1 Australia',
+        match: mockMatch
+      });
+    }
+  }, [triggerNotification]);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -245,7 +319,58 @@ export function FixturesProvider({ children }) {
         return resolvedFixture;
       });
       
-      setFixtures(finalMerged);
+      setFixtures(prevFixtures => {
+        if (prevFixtures && prevFixtures.length > 0) {
+          const prevMap = new Map(prevFixtures.map(f => [f.id, f]));
+          
+          finalMerged.forEach(newMatch => {
+            const oldMatch = prevMap.get(newMatch.id);
+            if (oldMatch) {
+              if (oldMatch.status === 'UPCOMING' && newMatch.status === 'LIVE') {
+                triggerNotification({
+                  type: 'KICKOFF',
+                  title: '⚽ Match Started!',
+                  body: `${TEAMS[newMatch.home]?.name || newMatch.home} vs ${TEAMS[newMatch.away]?.name || newMatch.away} has kicked off!`,
+                  match: newMatch
+                });
+              }
+              
+              if (newMatch.status === 'LIVE' || newMatch.status === 'FT') {
+                const oldHome = oldMatch.homeScore;
+                const oldAway = oldMatch.awayScore;
+                const newHome = newMatch.homeScore;
+                const newAway = newMatch.awayScore;
+                
+                if (newHome !== null && oldHome !== null && newHome > oldHome) {
+                  triggerNotification({
+                    type: 'GOAL',
+                    title: `⚽ GOAL for ${TEAMS[newMatch.home]?.name || newMatch.home}!`,
+                    body: `${TEAMS[newMatch.home]?.name || newMatch.home} ${newHome} - ${newAway} ${TEAMS[newMatch.away]?.name || newMatch.away}`,
+                    match: newMatch
+                  });
+                } else if (newAway !== null && oldAway !== null && newAway > oldAway) {
+                  triggerNotification({
+                    type: 'GOAL',
+                    title: `⚽ GOAL for ${TEAMS[newMatch.away]?.name || newMatch.away}!`,
+                    body: `${TEAMS[newMatch.home]?.name || newMatch.home} ${newHome} - ${newAway} ${TEAMS[newMatch.away]?.name || newMatch.away}`,
+                    match: newMatch
+                  });
+                }
+              }
+
+              if (oldMatch.status === 'LIVE' && newMatch.status === 'FT') {
+                triggerNotification({
+                  type: 'FULL_TIME',
+                  title: '🏁 Match Finished!',
+                  body: `Full Time: ${TEAMS[newMatch.home]?.name || newMatch.home} ${newMatch.homeScore} - ${newMatch.awayScore} ${TEAMS[newMatch.away]?.name || newMatch.away}`,
+                  match: newMatch
+                });
+              }
+            }
+          });
+        }
+        return finalMerged;
+      });
       const now = new Date();
       setLastUpdated(now);
       
@@ -319,7 +444,10 @@ export function FixturesProvider({ children }) {
     getCompletedFixtures,
     getUpcomingFixtures,
     getTodayFixtures,
-    getNextFixture
+    getNextFixture,
+    toasts,
+    dismissToast,
+    simulateEvent
   };
 
   return (

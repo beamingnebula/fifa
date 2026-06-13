@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import TopBar from '../components/TopBar';
 import SearchBar from '../components/SearchBar';
 import MatchCard from '../components/MatchCard';
+import { RefreshCw } from 'lucide-react';
 import GroupTable from '../components/GroupTable';
 import { GROUPS } from '../data/fixtures';
 import { TEAMS } from '../data/teams';
@@ -22,7 +23,7 @@ const STAGE_MAP = {
 const VIEWS = ['Matches', 'Groups'];
 
 export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6, initialSearch = '', autoFocusSearch = false }) {
-  const { fixtures } = useFixtures();
+  const { fixtures, refresh, loading } = useFixtures();
   const [search, setSearch] = useState(initialSearch);
   const [stageFilter, setStageFilter] = useState('All');
   const [view, setView] = useState('Matches');
@@ -61,7 +62,34 @@ export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6, ini
 
   return (
     <div>
-      <TopBar title="Fixtures" onBack={onBack} />
+      <TopBar 
+        title="Fixtures" 
+        onBack={onBack} 
+        rightAction={
+          <button
+            onClick={refresh}
+            disabled={loading}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-primary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 36,
+              height: 36,
+              borderRadius: '50%',
+              transition: 'background 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--border-color)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            aria-label="Refresh fixtures"
+          >
+            <RefreshCw size={18} color="var(--text-primary)" style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+          </button>
+        }
+      />
 
       {/* View Toggle */}
       <div style={{ display: 'flex', padding: '8px 16px', gap: 8 }}>

@@ -3,7 +3,8 @@ import TopBar from '../components/TopBar';
 import FlagIcon from '../components/FlagIcon';
 import { getAllTeams } from '../data/teams';
 import { Moon, Sun, Bell, Heart, Globe, Database, ChevronRight, Shield } from 'lucide-react';
-import { TIMEZONE_OPTIONS } from '../utils/timeUtils';
+import { TIMEZONE_OPTIONS, getBrowserTimezoneOffset, getTimezoneAbbr } from '../utils/timeUtils';
+import { useFixtures } from '../context/FixturesContext';
 
 function Toggle({ value, onChange }) {
   return (
@@ -14,6 +15,7 @@ function Toggle({ value, onChange }) {
 }
 
 export default function Settings({ onBack, settings, onSettingsChange }) {
+  const { simulateEvent } = useFixtures();
   const {
     darkMode = false,
     timezone = 6,
@@ -23,9 +25,35 @@ export default function Settings({ onBack, settings, onSettingsChange }) {
     goalAlerts = true,
   } = settings;
 
-  const update = (key, value) => onSettingsChange({ ...settings, [key]: value });
+  const update = (key, value) => {
+    onSettingsChange({ ...settings, [key]: value });
+    if (key === 'notifications' && value === true && 'Notification' in window) {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          try {
+            new Notification('Notifications Enabled!', {
+              body: 'You will now receive kickoff and goal alerts.',
+              icon: '/trophy.svg'
+            });
+          } catch (e) {}
+        }
+      });
+    }
+  };
 
-  const selectedTz = TIMEZONE_OPTIONS.find(t => t.offset === timezone) || TIMEZONE_OPTIONS[0];
+  const localOffset = getBrowserTimezoneOffset();
+  const localAbbr = getTimezoneAbbr(localOffset);
+
+  const displayTimezones = React.useMemo(() => {
+    const localOption = {
+      label: `Auto-detect (Detected: ${localAbbr}, UTC${localOffset >= 0 ? '+' : ''}${localOffset})`,
+      offset: localOffset,
+      abbr: `Auto (${localAbbr})`
+    };
+    return [localOption, ...TIMEZONE_OPTIONS];
+  }, [localOffset, localAbbr]);
+
+  const selectedTz = displayTimezones.find(t => t.offset === timezone) || displayTimezones[0];
 
   return (
     <div>
@@ -72,9 +100,9 @@ export default function Settings({ onBack, settings, onSettingsChange }) {
       </div>
       <div className="settings-group">
         <div style={{ padding: '4px 0' }}>
-          {TIMEZONE_OPTIONS.map(tz => (
+          {displayTimezones.map(tz => (
             <div
-              key={tz.abbr}
+              key={tz.label}
               className="settings-row"
               onClick={() => update('timezone', tz.offset)}
               style={{ paddingRight: 16 }}
@@ -178,6 +206,50 @@ export default function Settings({ onBack, settings, onSettingsChange }) {
             <div className="settings-sub">Reset all stored data</div>
           </div>
           <ChevronRight size={16} color="var(--text-muted)" />
+        </div>
+      </div>
+
+      {/* Simulation Tools */}
+      <div style={{ padding: '8px 16px 4px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.8px', color: 'var(--text-muted)' }}>
+        Notification Simulator
+      </div>
+      <div className="settings-group">
+        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+            Trigger mock alerts to test the toast layout and native system alerts.
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={() => simulateEvent('KICKOFF')}
+              style={{
+                flex: 1, padding: '10px', borderRadius: 12, border: '1px solid var(--border-color)',
+                background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.15s'
+              }}
+            >
+              🚀 Kickoff
+            </button>
+            <button
+              onClick={() => simulateEvent('GOAL')}
+              style={{
+                flex: 1, padding: '10px', borderRadius: 12, border: '1px solid var(--border-color)',
+                background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.15s'
+              }}
+            >
+              ⚽ Goal Alert
+            </button>
+            <button
+              onClick={() => simulateEvent('FULL_TIME')}
+              style={{
+                flex: 1, padding: '10px', borderRadius: 12, border: '1px solid var(--border-color)',
+                background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.15s'
+              }}
+            >
+              🏁 Full-Time
+            </button>
+          </div>
         </div>
       </div>
 

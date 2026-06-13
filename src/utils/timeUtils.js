@@ -117,3 +117,23 @@ export const TIMEZONE_OPTIONS = [
   { label: 'JST — Japan Standard Time (UTC+9)', offset: 9, abbr: 'JST' },
   { label: 'AEST — Australian Eastern (UTC+10)', offset: 10, abbr: 'AEST' },
 ];
+
+export const getBrowserTimezoneOffset = () => {
+  // Return browser local offset in hours (e.g. -5.5 for IST, which has negative offset in offset/timezone terms)
+  // getTimezoneOffset() returns positive values for west of GMT and negative values for east of GMT
+  // So we negate it and divide by 60
+  return -new Date().getTimezoneOffset() / 60;
+};
+
+export const getTimezoneAbbr = (offset) => {
+  const match = TIMEZONE_OPTIONS.find(t => t.offset === offset);
+  if (match) return match.abbr;
+  
+  // Custom offset labeling if not in defaults
+  const sign = offset >= 0 ? '+' : '';
+  const hrs = Math.floor(Math.abs(offset));
+  const mins = Math.round((Math.abs(offset) - hrs) * 60);
+  const minStr = mins > 0 ? `:${mins.toString().padStart(2, '0')}` : '';
+  return `UTC${sign}${hrs}${minStr}`;
+};
+

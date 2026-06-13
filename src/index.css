@@ -1420,3 +1420,123 @@ h1, h2, h3, h4, h5 {
   padding: 0 var(--space-md);
   z-index: auto !important;
 }
+
+/* ===== HOME DASHBOARD GRID ===== */
+.home-dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.home-main-col,
+.home-side-col {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
+  .home-dashboard-grid {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .home-main-col {
+    flex: 1.15;
+    border-right: 1px solid var(--border-subtle);
+  }
+  .home-side-col {
+    flex: 0.85;
+    position: sticky;
+    top: var(--top-bar-height);
+    max-height: calc(100vh - var(--top-bar-height) - var(--nav-height));
+    overflow-y: auto;
+  }
+}
+
+/* ===== GROUPS GRID ===== */
+.groups-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 8px 16px;
+}
+
+@media (min-width: 600px) {
+  .groups-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 900px) {
+  .groups-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.group-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+
+/* ===== NEW COMPONENT ANIMATIONS & SHAPES ===== */
+@keyframes gradient-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes slideDown {
+  from { transform: translate(-50%, -20px); opacity: 0; }
+  to { transform: translate(-50%, 0); opacity: 1; }
+}
+
+.hero-section,
+.team-detail-hero,
+.match-card.featured {
+  background-size: 200% 200% !important;
+  animation: gradient-move 15s ease infinite !important;
+  transition: background 0.8s ease-in-out;
+}
+
+/* Toast Container Slide in */
+@keyframes toastIn {
+  0% { transform: translateY(-20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.toast-item {
+  animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Leaflet/OSM Adjustments */
+.leaflet-container {
+  background: transparent !important;
+  font-family: inherit;
+}
+
+.leaflet-bar {
+  border: none !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.leaflet-bar a {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.leaflet-control-attribution {
+  font-size: 9px !important;
+  background: var(--bg-overlay) !important;
+  color: var(--text-muted) !important;
+  border-radius: 4px;
+}
+
+@keyframes mapPulse {
+  0%, 100% { transform: scale(1); opacity: 0.35; }
+  50% { transform: scale(1.6); opacity: 0.05; }
+}
+

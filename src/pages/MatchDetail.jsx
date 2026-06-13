@@ -5,7 +5,7 @@ import Countdown from '../components/Countdown';
 import { TEAMS } from '../data/teams';
 import { VENUES } from '../data/fixtures';
 import { getMatchStatus, getVenueById } from '../utils/matchUtils';
-import { formatFullDate, formatKickoff, formatDateTime } from '../utils/timeUtils';
+import { formatFullDate, formatKickoff, formatDateTime, getTimezoneAbbr } from '../utils/timeUtils';
 import { MapPin, Clock, Calendar, Activity, BarChart3, ArrowRight, RefreshCw } from 'lucide-react';
 import { useFixtures } from '../context/FixturesContext';
 
@@ -139,7 +139,7 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
               <>
                 <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 28, color: 'rgba(255,255,255,0.5)', letterSpacing: 3 }}>VS</div>
                 <div style={{ fontSize: 20, fontWeight: 800, color: '#FFD700' }}>{formatKickoff(currentMatch.utcDate, timezoneOffset)}</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>BST</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{getTimezoneAbbr(timezoneOffset)}</div>
               </>
             )}
           </div>
@@ -156,7 +156,7 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
       <div className="info-card">
         {[
           { icon: Calendar, label: 'Date', value: formatFullDate(currentMatch.utcDate, timezoneOffset) },
-          { icon: Clock,    label: 'Kickoff',  value: `${formatKickoff(currentMatch.utcDate, timezoneOffset)} BST` },
+          { icon: Clock,    label: 'Kickoff',  value: `${formatKickoff(currentMatch.utcDate, timezoneOffset)} ${getTimezoneAbbr(timezoneOffset)}` },
           ...(venue ? [
             { icon: MapPin, label: 'Stadium', value: venue.name },
             { icon: MapPin, label: 'City',    value: `${venue.city}, ${venue.country}` },
