@@ -63,6 +63,12 @@
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Adaptive Countdown styling variables */
+  --countdown-bg: rgba(200, 16, 46, 0.05);
+  --countdown-border: rgba(200, 16, 46, 0.1);
+  --countdown-number: var(--fifa-red);
+  --countdown-label: var(--text-secondary);
 }
 
 /* ===== DARK MODE ===== */
@@ -90,6 +96,12 @@
 
   --nav-bg: #131325;
   --gradient-card: linear-gradient(135deg, #1A1A2E 0%, #22223a 100%);
+
+  /* Adaptive Countdown styling variables - Dark Mode */
+  --countdown-bg: rgba(255, 215, 0, 0.08);
+  --countdown-border: rgba(255, 215, 0, 0.15);
+  --countdown-number: var(--fifa-gold);
+  --countdown-label: rgba(255, 255, 255, 0.6);
 }
 
 /* ===== RESET & BASE ===== */
@@ -127,13 +139,24 @@ body {
 
 @media (min-width: 768px) {
   #root {
+    max-width: 100%;
+  }
+  .page-content:not(.home-page-content) {
     max-width: 960px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .hero-content-wrapper,
+  .stats-strip-wrapper {
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
 @media (min-width: 1024px) {
   #root {
-    max-width: 1200px;
+    max-width: 100%;
   }
 }
 
@@ -211,12 +234,15 @@ h1, h2, h3, h4, h5 {
 /* ===== HERO SECTION ===== */
 .hero-section {
   background: var(--gradient-hero);
-  /* Extend to true edges on mobile — no horizontal padding gap */
-  padding: var(--space-xl) var(--space-md) 0;
+  /* Full width layout container */
+  width: 100%;
   position: relative;
+  /* Extend to true edges on mobile — no horizontal padding gap */
+  padding: var(--space-xl) 0 0;
   overflow: hidden;
   /* Absorb the stats strip into the gradient area */
   padding-bottom: var(--space-lg);
+  box-sizing: border-box;
 }
 
 /* Hologram text backdrop */
@@ -260,6 +286,8 @@ h1, h2, h3, h4, h5 {
   gap: var(--space-md);
   position: relative;
   z-index: 1;
+  padding: 0 var(--space-md);
+  box-sizing: border-box;
 }
 
 .hero-text-side {
@@ -1787,4 +1815,227 @@ h1, h2, h3, h4, h5 {
   0%, 100% { transform: scale(1); opacity: 0.35; }
   50% { transform: scale(1.6); opacity: 0.05; }
 }
+
+/* ===== VERSION 1.2 HOLOGRAM & HUD STYLING ===== */
+
+/* Moving digital grid backdrop */
+.hologram-grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.85;
+  animation: hologram-grid-shift 25s linear infinite;
+}
+
+@keyframes hologram-grid-shift {
+  from { background-position: 0 0; }
+  to { background-position: 60px 60px; }
+}
+
+/* Vertical glowing scanline sweeping the hero */
+.hologram-scanline {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(to bottom, 
+    transparent, 
+    rgba(0, 245, 255, 0.25) 50%, 
+    transparent
+  );
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 1;
+  animation: hologram-scanline-anim 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes hologram-scanline-anim {
+  0% { top: -5%; }
+  100% { top: 105%; }
+}
+
+/* Rotating SVG HUD vectors */
+.hologram-svg-wrapper {
+  position: absolute;
+  right: 2%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 320px;
+  height: 320px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.65;
+}
+
+@media (max-width: 768px) {
+  .hologram-svg-wrapper {
+    width: 220px;
+    height: 220px;
+    right: -20px;
+    top: 60%;
+    opacity: 0.4;
+  }
+}
+
+.hologram-ring-outer {
+  transform-origin: center;
+  animation: spin-clockwise 30s linear infinite;
+}
+
+.hologram-ring-inner {
+  transform-origin: center;
+  animation: spin-counter-clockwise 20s linear infinite;
+}
+
+.hologram-ring-center {
+  transform-origin: center;
+  animation: pulse-ring-glow 3s ease-in-out infinite;
+}
+
+@keyframes spin-clockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-counter-clockwise {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes pulse-ring-glow {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.06); opacity: 0.3; }
+}
+
+/* Glassmorphic HUD elements */
+.hud-glass-card {
+  background: rgba(19, 19, 37, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 245, 255, 0.18);
+  border-radius: var(--radius-xl);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.35),
+    inset 0 0 20px rgba(0, 245, 255, 0.05);
+  transition: all var(--transition-normal);
+  overflow: hidden;
+  position: relative;
+}
+
+.hud-glass-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 245, 255, 0.04) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.hud-glass-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 245, 255, 0.4);
+  box-shadow: 
+    0 15px 35px rgba(0, 245, 255, 0.2),
+    inset 0 0 25px rgba(0, 245, 255, 0.1);
+}
+
+/* Adaptive theme-aware countdown */
+.countdown-container-adaptive {
+  display: flex;
+  gap: var(--space-sm);
+  position: relative;
+  z-index: 1;
+}
+
+.countdown-unit-adaptive {
+  flex: 1;
+  background: var(--countdown-bg);
+  border: 1px solid var(--countdown-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm);
+  text-align: center;
+  backdrop-filter: blur(10px);
+  transition: all var(--transition-fast);
+}
+
+.countdown-number-adaptive {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 32px;
+  color: var(--countdown-number);
+  line-height: 1;
+  display: block;
+}
+
+.countdown-label-adaptive {
+  font-size: 9px;
+  color: var(--countdown-label);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-top: 2px;
+}
+
+/* Compact horizontal variant for trackers/lists */
+.countdown-compact-adaptive {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+}
+
+.countdown-compact-adaptive .countdown-unit-adaptive {
+  padding: 4px 6px;
+  min-width: 30px;
+  border-radius: 6px;
+  flex: none;
+}
+
+.countdown-compact-adaptive .countdown-number-adaptive {
+  font-size: 11px;
+}
+
+.countdown-compact-adaptive .countdown-label-adaptive {
+  font-size: 6px;
+  margin-top: 1px;
+}
+
+/* HUD Overlay theme for countdown inside dark backgrounds (Hero, Next Match) */
+.countdown-hud .countdown-unit-adaptive {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0, 245, 255, 0.2);
+  box-shadow: inset 0 0 8px rgba(0, 245, 255, 0.05);
+}
+
+.countdown-hud .countdown-number-adaptive {
+  color: #00F5FF;
+  text-shadow: 0 0 8px rgba(0, 245, 255, 0.65);
+}
+
+.countdown-hud .countdown-label-adaptive {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Scalable multi-column layouts */
+@media (max-width: 1024px) {
+  .home-dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-lg) !important;
+  }
+}
+
+/* Hologram visual glitch/pulse header */
+.hero-title-pulse {
+  animation: hero-glow 4s infinite alternate;
+}
+
+@keyframes hero-glow {
+  0% { text-shadow: 0 0 10px rgba(255,255,255,0.1), 0 0 20px rgba(0, 245, 255, 0.1); }
+  100% { text-shadow: 0 0 15px rgba(255,255,255,0.3), 0 0 30px rgba(0, 245, 255, 0.4); }
+}
+
 

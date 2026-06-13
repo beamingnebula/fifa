@@ -4,7 +4,13 @@ import { getCountdown } from '../utils/timeUtils';
 // FIFA World Cup 2026 Final: July 19, 2026
 const FINAL_DATE = '2026-07-19T20:00:00Z';
 
-export default function Countdown({ targetDate = FINAL_DATE, label = "Until the Final", compact = false }) {
+export default function Countdown({ 
+  targetDate = FINAL_DATE, 
+  label = "Until the Final", 
+  compact = false, 
+  hud = false, 
+  className = '' 
+}) {
   const [time, setTime] = useState(getCountdown(targetDate));
 
   useEffect(() => {
@@ -23,36 +29,40 @@ export default function Countdown({ targetDate = FINAL_DATE, label = "Until the 
 
   if (time.total <= 0) {
     return (
-      <div style={{ textAlign: 'center', padding: compact ? '2px 0' : '8px 0' }}>
-        <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: compact ? 12 : 18, fontWeight: 700 }}>
+      <div className={`countdown-finished ${hud ? 'text-hud-active' : ''}`} style={{ textAlign: 'center', padding: compact ? '2px 0' : '8px 0' }}>
+        <span style={{ fontSize: compact ? 12 : 18, fontWeight: 700 }}>
           ⚽ Live / Completed
         </span>
       </div>
     );
   }
 
+  const containerClass = compact ? 'countdown-compact-adaptive' : 'countdown-container-adaptive';
+  const hudClass = hud ? 'countdown-hud' : '';
+  const combinedClass = `${containerClass} ${hudClass} ${className}`.trim();
+
+  // If compact, we also show a small inline label if specified
   if (compact) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
+      <div className={`countdown-compact-wrapper ${hudClass}`} style={{ display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
         {label && (
-          <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+          <span className="countdown-compact-label" style={{ 
+            fontSize: 10, 
+            fontWeight: 700, 
+            textTransform: 'uppercase', 
+            letterSpacing: 0.5,
+            color: hud ? 'rgba(255,255,255,0.7)' : 'var(--text-secondary)'
+          }}>
             {label}
           </span>
         )}
-        <div style={{ display: 'flex', gap: 4 }}>
+        <div className={combinedClass}>
           {units.map(({ value, label: lbl }) => (
-            <div key={lbl} style={{
-              background: 'rgba(255,255,255,0.12)',
-              borderRadius: 6,
-              padding: '3px 6px',
-              minWidth: 28,
-              textAlign: 'center',
-              border: '1px solid rgba(255,255,255,0.1)'
-            }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#FFD700', fontFamily: 'monospace', display: 'block', lineHeight: 1 }}>
+            <div key={lbl} className="countdown-unit-adaptive">
+              <span className="countdown-number-adaptive">
                 {String(value).padStart(2, '0')}
               </span>
-              <span style={{ fontSize: 6, fontWeight: 600, color: 'rgba(255,255,255,0.5)', display: 'block', marginTop: 1 }}>
+              <span className="countdown-label-adaptive">
                 {lbl.substring(0, 3)}
               </span>
             </div>
@@ -63,17 +73,26 @@ export default function Countdown({ targetDate = FINAL_DATE, label = "Until the 
   }
 
   return (
-    <div>
-      <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 8 }}>
-        ⏱ {label}
-      </div>
-      <div className="countdown-container">
+    <div className={hudClass}>
+      {label && (
+        <div className="countdown-header-label" style={{ 
+          fontSize: 11, 
+          fontWeight: 600, 
+          textTransform: 'uppercase', 
+          letterSpacing: '1.2px', 
+          marginBottom: 8,
+          color: hud ? 'rgba(255,255,255,0.6)' : 'var(--text-secondary)'
+        }}>
+          ⏱ {label}
+        </div>
+      )}
+      <div className={combinedClass}>
         {units.map(({ value, label: lbl }) => (
-          <div key={lbl} className="countdown-unit">
-            <span className="countdown-number">
+          <div key={lbl} className="countdown-unit-adaptive">
+            <span className="countdown-number-adaptive">
               {String(value).padStart(2, '0')}
             </span>
-            <span className="countdown-label">{lbl}</span>
+            <span className="countdown-label-adaptive">{lbl}</span>
           </div>
         ))}
       </div>
