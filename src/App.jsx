@@ -15,6 +15,7 @@ import { useLocalStorage } from './hooks/useLocalStorage';
 import { getMatchStatus } from './utils/matchUtils';
 import { useFixtures } from './context/FixturesContext';
 import { getBrowserTimezoneOffset } from './utils/timeUtils';
+import SidebarNav from './components/SidebarNav';
 
 const MAIN_TABS = ['home', 'fixtures', 'teams', 'matches', 'highlights', 'worldmap', 'settings'];
 
@@ -230,13 +231,23 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      <div className="page-content" style={{ paddingBottom: showBottomNav ? 'var(--nav-height)' : 0 }}>
-        {renderContent()}
+      <SidebarNav
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        liveCount={liveCount}
+      />
+
+      <div className="page-content-wrapper">
+        <div className="page-content" style={{ paddingBottom: showBottomNav ? 'var(--nav-height)' : 0 }}>
+          {renderContent()}
+        </div>
       </div>
 
       {deferredPrompt && !pwaDismissed && (
-        <div style={{
-          position: 'fixed',
+        <div 
+          className="pwa-install-banner"
+          style={{
+            position: 'fixed',
           bottom: showBottomNav ? 'calc(var(--nav-height) + 16px)' : '16px',
           left: 16, right: 16,
           background: 'var(--bg-secondary)',
