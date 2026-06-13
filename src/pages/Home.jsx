@@ -131,25 +131,28 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
             <Countdown />
           </div>
         </div>
+
+        {/* ===== STATS STRIP ===== */}
+        <div className="stats-strip-wrapper">
+          <div className="stats-strip">
+            <div className="stat-item" onClick={() => onNavigate('fixtures')}>
+              <span className="stat-number">{fixtures.length}</span>
+              <span className="stat-label">Total</span>
+            </div>
+            <div className="stat-item" onClick={() => onNavigate('matches-played')} style={{ position: 'relative' }}>
+              <span style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--gradient-red)', borderRadius: '0 0 0 0', opacity: 0 }} />
+              <span className="stat-number red">{completed.length}</span>
+              <span className="stat-label">Played</span>
+            </div>
+            <div className="stat-item" onClick={() => onNavigate('matches-remaining')}>
+              <span className="stat-number gold">{upcoming.length}</span>
+              <span className="stat-label">Remaining</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="home-content-container">
-        {/* ===== STATS STRIP ===== */}
-        <div className="stats-strip">
-          <div className="stat-item" onClick={() => onNavigate('fixtures')}>
-            <span className="stat-number">{fixtures.length}</span>
-            <span className="stat-label">Total</span>
-          </div>
-          <div className="stat-item" onClick={() => onNavigate('matches-played')} style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--gradient-red)', borderRadius: '0 0 0 0', opacity: 0 }} />
-            <span className="stat-number red">{completed.length}</span>
-            <span className="stat-label">Played</span>
-          </div>
-          <div className="stat-item" onClick={() => onNavigate('matches-remaining')}>
-            <span className="stat-number gold">{upcoming.length}</span>
-            <span className="stat-label">Remaining</span>
-          </div>
-        </div>
 
       {/* ===== QUICK SEARCH BAR ===== */}
       <div className="home-search-container" style={{ marginTop: 12 }}>

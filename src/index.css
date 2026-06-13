@@ -216,7 +216,7 @@ h1, h2, h3, h4, h5 {
 /* ===== HERO SECTION ===== */
 .hero-section {
   background: var(--gradient-hero);
-  padding: var(--space-xl) var(--space-md) var(--space-2xl);
+  padding: var(--space-xl) var(--space-md) var(--space-xl);
   position: relative;
   overflow: hidden;
 }
@@ -399,14 +399,20 @@ h1, h2, h3, h4, h5 {
   display: flex;
   background: var(--bg-secondary);
   border-radius: var(--radius-xl);
-  margin: -var(--space-lg) var(--space-md) 0;
   padding: var(--space-md);
   box-shadow: var(--shadow-lg);
   gap: 1px;
   position: relative;
   z-index: 10;
-  margin-top: -24px;
-  mx: var(--space-md);
+}
+
+.stats-strip-wrapper {
+  width: 100%;
+  padding: 0 var(--space-md);
+  box-sizing: border-box;
+  margin-top: var(--space-lg);
+  position: relative;
+  z-index: 10;
 }
 
 .stat-item {
@@ -1005,13 +1011,20 @@ h1, h2, h3, h4, h5 {
   }
 
   .hero-section {
-    padding: 40px 0 56px;
+    padding: 40px 0 40px;
   }
 
   .hero-content-wrapper {
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
+    padding: 0 var(--space-lg);
+    box-sizing: border-box;
+  }
+
+  .stats-strip-wrapper {
+    max-width: 1200px;
+    margin: var(--space-lg) auto 0;
     padding: 0 var(--space-lg);
     box-sizing: border-box;
   }
