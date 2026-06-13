@@ -2,13 +2,19 @@ import React from 'react';
 import FlagIcon from './FlagIcon';
 import { TEAMS } from '../data/teams';
 import { getGroupStandings } from '../utils/matchUtils';
-import { GROUPS } from '../data/fixtures';
 import { useFixtures } from '../context/FixturesContext';
 
 export default function GroupTable({ group }) {
   const { getFixturesByGroup } = useFixtures();
-  const groupCodes = GROUPS[group] || [];
   const groupFixtures = getFixturesByGroup(group);
+  const groupCodes = React.useMemo(() => {
+    const codes = new Set();
+    groupFixtures.forEach(f => {
+      if (f.home) codes.add(f.home);
+      if (f.away) codes.add(f.away);
+    });
+    return Array.from(codes);
+  }, [groupFixtures]);
   const standings = getGroupStandings(groupFixtures, groupCodes);
 
   return (

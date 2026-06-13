@@ -4,21 +4,10 @@ import SearchBar from '../components/SearchBar';
 import MatchCard from '../components/MatchCard';
 import { RefreshCw } from 'lucide-react';
 import GroupTable from '../components/GroupTable';
-import { GROUPS } from '../data/fixtures';
 import { TEAMS } from '../data/teams';
-import { getMatchStatus, getStageName } from '../utils/matchUtils';
+import { getMatchStatus, getStageName, getStageOrder } from '../utils/matchUtils';
 import { formatDate } from '../utils/timeUtils';
 import { useFixtures } from '../context/FixturesContext';
-
-const STAGES = ['All', 'Group Stage', 'Round of 32', 'Round of 16', 'Quarter-finals', 'Semi-finals', 'Final'];
-const STAGE_MAP = {
-  'Group Stage': 'GROUP',
-  'Round of 32': 'R32',
-  'Round of 16': 'R16',
-  'Quarter-finals': 'QF',
-  'Semi-finals': 'SF',
-  'Final': 'FINAL',
-};
 
 const VIEWS = ['Matches', 'Groups'];
 
@@ -28,6 +17,22 @@ export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6, ini
   const [stageFilter, setStageFilter] = useState('All');
   const [view, setView] = useState('Matches');
 
+  const dynamicStages = useMemo(() => {
+    const stagesSet = new Set(fixtures.map(f => f.stage).filter(Boolean));
+    const stageCodes = Array.from(stagesSet).sort((a, b) => getStageOrder(a) - getStageOrder(b));
+    return ['All', ...stageCodes];
+  }, [fixtures]);
+
+  const dynamicGroups = useMemo(() => {
+    const groupsSet = new Set();
+    fixtures.forEach(f => {
+      if (f.group) {
+        groupsSet.add(f.group);
+      }
+    });
+    return Array.from(groupsSet).sort();
+  }, [fixtures]);
+
   useEffect(() => {
     setSearch(initialSearch);
   }, [initialSearch]);
@@ -35,8 +40,7 @@ export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6, ini
   const filtered = useMemo(() => {
     let list = fixtures;
     if (stageFilter !== 'All') {
-      const stageCode = STAGE_MAP[stageFilter];
-      list = list.filter(f => f.stage === stageCode);
+      list = list.filter(f => f.stage === stageFilter);
     }
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -47,12 +51,13 @@ export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6, ini
       });
     }
     return list;
-  }, [search, stageFilter]);
+  }, [fixtures, search, stageFilter]);
 
   // Group matches by date
   const grouped = useMemo(() => {
+    const sorted = [...filtered].sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate));
     const byDate = {};
-    filtered.forEach(f => {
+    sorted.forEach(f => {
       const key = formatDate(f.utcDate, timezoneOffset);
       if (!byDate[key]) byDate[key] = [];
       byDate[key].push(f);
@@ -121,13 +126,13 @@ export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6, ini
           <SearchBar value={search} onChange={setSearch} placeholder="Search teams..." autoFocus={autoFocusSearch} />
           {/* Stage Filters */}
           <div className="filter-chips">
-            {STAGES.map(s => (
+            {dynamicStages.map(s => (
               <button
                 key={s}
                 className={`filter-chip ${stageFilter === s ? 'active' : ''}`}
                 onClick={() => setStageFilter(s)}
               >
-                {s}
+                {s === 'All' ? 'All' : getStageName(s)}
               </button>
             ))}
           </div>
@@ -168,49 +173,54 @@ export default function Fixtures({ onBack, onMatchClick, timezoneOffset = 6, ini
       ) : (
         /* Groups View */
         <div className="groups-grid" style={{ padding: '8px 0' }}>
-          {Object.keys(GROUPS).map(group => (
-            <div key={group} className="group-card">
-              <div style={{
-                background: 'var(--gradient-red)',
-                padding: '10px 16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-              }}>
-                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 22, color: 'white', letterSpacing: 1 }}>
-                  Group {group}
-                </span>
+          {dynamicGroups.map(group => {
+            const groupMatches = fixtures
+              .filter(f => f.group === group)
+              .sort((a, b) => new Date(a.utcDate) - new Date(b.utcDate));
+            return (
+              <div key={group} className="group-card">
+                <div style={{
+                  background: 'var(--gradient-red)',
+                  padding: '10px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}>
+                  <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 22, color: 'white', letterSpacing: 1 }}>
+                    Group {group}
+                  </span>
+                </div>
+                <div style={{ padding: '4px 0' }}>
+                  <GroupTable group={group} />
+                </div>
+                {/* Group fixtures */}
+                <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '4px 0' }}>
+                  {groupMatches.map(m => (
+                    <div
+                      key={m.id}
+                      onClick={() => onMatchClick?.(m)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '8px 16px', cursor: 'pointer', transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-primary)'}
+                      onMouseLeave={e => e.currentTarget.style.background = ''}
+                    >
+                      <span style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 1, fontWeight: 600 }}>
+                        {TEAMS[m.home]?.name || m.home}
+                      </span>
+                      <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', padding: '0 12px', minWidth: 64, textAlign: 'center' }}>
+                        {m.homeScore !== null ? `${m.homeScore} - ${m.awayScore}` : formatDate(m.utcDate, timezoneOffset)}
+                      </span>
+                      <span style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 1, textAlign: 'right', fontWeight: 600 }}>
+                        {TEAMS[m.away]?.name || m.away}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div style={{ padding: '4px 0' }}>
-                <GroupTable group={group} />
-              </div>
-              {/* Group fixtures */}
-              <div style={{ borderTop: '1px solid var(--border-subtle)', padding: '4px 0' }}>
-                {fixtures.filter(f => f.group === group).map(m => (
-                  <div
-                    key={m.id}
-                    onClick={() => onMatchClick?.(m)}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '8px 16px', cursor: 'pointer', transition: 'background 0.15s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-primary)'}
-                    onMouseLeave={e => e.currentTarget.style.background = ''}
-                  >
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 1, fontWeight: 600 }}>
-                      {TEAMS[m.home]?.name || m.home}
-                    </span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', padding: '0 12px', minWidth: 64, textAlign: 'center' }}>
-                      {m.homeScore !== null ? `${m.homeScore} - ${m.awayScore}` : formatDate(m.utcDate, timezoneOffset)}
-                    </span>
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 1, textAlign: 'right', fontWeight: 600 }}>
-                      {TEAMS[m.away]?.name || m.away}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+            );
+          })}
           <div style={{ height: 24 }} />
         </div>
       )}
