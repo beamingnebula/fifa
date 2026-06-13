@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { FIXTURES, GROUPS } from '../data/fixtures';
 import { TEAMS } from '../data/teams';
-import { getGroupStandings } from '../utils/matchUtils';
+import { getGroupStandings, getMatchStatus } from '../utils/matchUtils';
 
 const FixturesContext = createContext(null);
 
@@ -415,8 +415,8 @@ export function FixturesProvider({ children }) {
   const getFixturesByGroup = useCallback((group) => fixtures.filter(f => f.group === group), [fixtures]);
   const getFixturesByTeam = useCallback((teamCode) => fixtures.filter(f => f.home === teamCode || f.away === teamCode), [fixtures]);
   const getFixturesByStage = useCallback((stage) => fixtures.filter(f => f.stage === stage), [fixtures]);
-  const getCompletedFixtures = useCallback(() => fixtures.filter(f => f.homeScore !== null), [fixtures]);
-  const getUpcomingFixtures = useCallback(() => fixtures.filter(f => f.homeScore === null), [fixtures]);
+  const getCompletedFixtures = useCallback(() => fixtures.filter(f => getMatchStatus(f) === 'FT'), [fixtures]);
+  const getUpcomingFixtures = useCallback(() => fixtures.filter(f => getMatchStatus(f) !== 'FT'), [fixtures]);
   
   const getTodayFixtures = useCallback(() => {
     const today = new Date();

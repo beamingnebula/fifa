@@ -997,12 +997,52 @@ h1, h2, h3, h4, h5 {
     padding-bottom: 0 !important;
   }
 
+  .page-content.home-page-content {
+    padding: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  .hero-section {
+    padding: 40px 0 56px;
+  }
+
+  .hero-content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 var(--space-lg);
+    box-sizing: border-box;
+  }
+
+  .home-content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg) var(--space-lg);
+    box-sizing: border-box;
+  }
+
   .pwa-install-banner {
     left: 284px !important;
     right: auto !important;
     width: 380px !important;
     bottom: 24px !important;
   }
+}
+
+/* Global resets for full-width home page content */
+.home-page-content {
+  padding: 0 !important;
+  max-width: none !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.home-content-container {
+  width: 100%;
+  padding: 0 var(--space-md) var(--space-lg);
+  box-sizing: border-box;
 }
 
 .nav-items {

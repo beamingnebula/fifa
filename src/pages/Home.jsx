@@ -9,8 +9,6 @@ import { isToday, formatKickoff, formatDate, getTimezoneAbbr } from '../utils/ti
 import { getMatchStatus } from '../utils/matchUtils';
 import { useFixtures } from '../context/FixturesContext';
 
-const TOTAL_MATCHES = 104;
-
 export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] }) {
   const {
     fixtures,
@@ -135,22 +133,23 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
         </div>
       </div>
 
-      {/* ===== STATS STRIP ===== */}
-      <div className="stats-strip">
-        <div className="stat-item" onClick={() => onNavigate('fixtures')}>
-          <span className="stat-number">{TOTAL_MATCHES}</span>
-          <span className="stat-label">Total</span>
+      <div className="home-content-container">
+        {/* ===== STATS STRIP ===== */}
+        <div className="stats-strip">
+          <div className="stat-item" onClick={() => onNavigate('fixtures')}>
+            <span className="stat-number">{fixtures.length}</span>
+            <span className="stat-label">Total</span>
+          </div>
+          <div className="stat-item" onClick={() => onNavigate('matches-played')} style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--gradient-red)', borderRadius: '0 0 0 0', opacity: 0 }} />
+            <span className="stat-number red">{completed.length}</span>
+            <span className="stat-label">Played</span>
+          </div>
+          <div className="stat-item" onClick={() => onNavigate('matches-remaining')}>
+            <span className="stat-number gold">{upcoming.length}</span>
+            <span className="stat-label">Remaining</span>
+          </div>
         </div>
-        <div className="stat-item" onClick={() => onNavigate('matches-played')} style={{ position: 'relative' }}>
-          <span style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'var(--gradient-red)', borderRadius: '0 0 0 0', opacity: 0 }} />
-          <span className="stat-number red">{completed.length}</span>
-          <span className="stat-label">Played</span>
-        </div>
-        <div className="stat-item" onClick={() => onNavigate('matches-remaining')}>
-          <span className="stat-number gold">{upcoming.length}</span>
-          <span className="stat-label">Remaining</span>
-        </div>
-      </div>
 
       {/* ===== QUICK SEARCH BAR ===== */}
       <div className="home-search-container" style={{ marginTop: 12 }}>
@@ -389,8 +388,9 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
           </div>
         </div>
       </div>
+    </div>
 
-      <style>{`
+    <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
       `}</style>
     </div>

@@ -228,6 +228,7 @@ export default function App() {
   };
 
   const showBottomNav = !currentStack; // hide bottom nav on detail pages
+  const isHome = activeTab === 'home' && !currentStack;
 
   return (
     <div className="app-layout">
@@ -238,7 +239,7 @@ export default function App() {
       />
 
       <div className="page-content-wrapper">
-        <div className="page-content" style={{ paddingBottom: showBottomNav ? 'var(--nav-height)' : 0 }}>
+        <div className={`page-content ${isHome ? 'home-page-content' : 'standard-page-content'}`} style={{ paddingBottom: showBottomNav ? 'var(--nav-height)' : 0 }}>
           {renderContent()}
         </div>
       </div>
