@@ -155,7 +155,7 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
       <div className="home-content-container">
 
       {/* ===== QUICK SEARCH BAR ===== */}
-      <div className="home-search-container" style={{ marginTop: 12 }}>
+      <div className="home-search-container">
         <SearchBar
           value=""
           placeholder="Search teams or fixtures..."
