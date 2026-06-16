@@ -1,4 +1,3 @@
-import React from 'react';
 import { Home, Calendar, Users, Play, Map, Settings, Activity } from 'lucide-react';
 
 const NAV_ITEMS = [

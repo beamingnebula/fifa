@@ -1,24 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { getLiveMatchClock } from '../utils/timeUtils';
 
 export default function MatchClock({ utcDate, status }) {
-  const [clockText, setClockText] = useState(() => getLiveMatchClock(utcDate));
+  const [tickingText, setTickingText] = useState(() => getLiveMatchClock(utcDate));
 
   useEffect(() => {
-    if (status !== 'LIVE') {
-      setClockText(status === 'FT' ? 'FT' : 'Upcoming');
-      return;
-    }
+    if (status !== 'LIVE') return;
 
-    // Initial state setup
-    setClockText(getLiveMatchClock(utcDate));
-
+    setTickingText(getLiveMatchClock(utcDate));
     const interval = setInterval(() => {
-      setClockText(getLiveMatchClock(utcDate));
+      setTickingText(getLiveMatchClock(utcDate));
     }, 1000);
 
     return () => clearInterval(interval);
   }, [utcDate, status]);
 
-  return <span>{clockText}</span>;
+  if (status !== 'LIVE') {
+    return <span>{status === 'FT' ? 'FT' : 'Upcoming'}</span>;
+  }
+
+  return <span>{tickingText}</span>;
 }

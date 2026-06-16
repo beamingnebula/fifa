@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function FlagIcon({ code, size = 'md', circle = false, style = {} }) {
   const sizes = { sm: 'flag-sm', md: 'flag-md', lg: 'flag-lg', xl: 'flag-xl' };
   const cls = circle ? 'flag-circle' : `flag-icon ${sizes[size] || sizes.md}`;

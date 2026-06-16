@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import BottomNav from './components/BottomNav';
 import Home from './pages/Home';
 import Fixtures from './pages/Fixtures';

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import TopBar from '../components/TopBar';
 import FlagIcon from '../components/FlagIcon';
-import { HIGHLIGHTS, getSortedHighlights, getYoutubeSearchUrl } from '../data/highlights';
+import { HIGHLIGHTS, getYoutubeSearchUrl } from '../data/highlights';
 import { TEAMS } from '../data/teams';
 import { Play, ExternalLink, Eye } from 'lucide-react';
 import { useFixtures } from '../context/FixturesContext';

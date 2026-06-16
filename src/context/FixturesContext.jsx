@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { FIXTURES, GROUPS } from '../data/fixtures';
 import { TEAMS } from '../data/teams';
 import { getGroupStandings, getMatchStatus } from '../utils/matchUtils';
@@ -18,7 +18,7 @@ const mapTeamCode = (abbr) => {
 };
 
 // Helper to determine match status from ESPN
-const getEspnStatus = (state, displayClock) => {
+const getEspnStatus = (state) => {
   if (state === 'in') return 'LIVE';
   if (state === 'post') return 'FT';
   return 'UPCOMING';
@@ -106,6 +106,10 @@ export function FixturesProvider({ children }) {
 
   const [toasts, setToasts] = useState([]);
 
+  const dismissToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
   const addToast = useCallback((toast) => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts(prev => [...prev, { id, ...toast, timestamp: Date.now() }]);
@@ -113,11 +117,7 @@ export function FixturesProvider({ children }) {
     setTimeout(() => {
       dismissToast(id);
     }, 6000);
-  }, []);
-
-  const dismissToast = useCallback((id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
+  }, [dismissToast]);
 
   const triggerNotification = useCallback(({ type, title, body, match }) => {
     const settings = JSON.parse(localStorage.getItem('fifa_settings') || '{}');
@@ -225,7 +225,7 @@ export function FixturesProvider({ children }) {
               staticMatch.homeScore = orig ? orig.homeScore : null;
               staticMatch.awayScore = orig ? orig.awayScore : null;
             }
-            staticMatch.status = getEspnStatus(state, comp.status?.displayClock);
+            staticMatch.status = getEspnStatus(state);
             staticMatch.clock = staticMatch.status === 'LIVE' ? comp.status?.displayClock : null;
             staticMatch.utcDate = event.date || staticMatch.utcDate;
             staticMatch.stats = isStarted ? extractStats(comp, staticMatch.home) : null;
@@ -271,9 +271,7 @@ export function FixturesProvider({ children }) {
           const datesClose = Math.abs(new Date(espnDate).getTime() - new Date(resolvedFixture.utcDate).getTime()) < 60 * 60 * 1000; // within 1 hr
           
           const note = comp.altGameNote || '';
-          const name = event.name || '';
           const noteLower = note.toLowerCase();
-          const nameLower = name.toLowerCase();
           
           let stageMatches = false;
           if (resolvedFixture.stage === 'R32' && noteLower.includes('round of 32')) stageMatches = true;
@@ -313,7 +311,7 @@ export function FixturesProvider({ children }) {
             resolvedFixture.away = staticIsHome ? mapTeamCode(awayComp?.team?.abbreviation) : homeCode;
           }
           
-          resolvedFixture.status = getEspnStatus(state, comp?.status?.displayClock);
+          resolvedFixture.status = getEspnStatus(state);
           resolvedFixture.clock = resolvedFixture.status === 'LIVE' ? comp?.status?.displayClock : null;
           resolvedFixture.utcDate = matchedEvent.date || resolvedFixture.utcDate;
           resolvedFixture.stats = isStarted ? extractStats(comp, resolvedFixture.home) : null;
@@ -385,11 +383,13 @@ export function FixturesProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [triggerNotification]);
 
   // Poll for updates
   useEffect(() => {
-    refresh();
+    const t = setTimeout(() => {
+      refresh();
+    }, 0);
     
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
@@ -406,6 +406,7 @@ export function FixturesProvider({ children }) {
     }, 30000); // Poll every 30 seconds
     
     return () => {
+      clearTimeout(t);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(interval);
     };
