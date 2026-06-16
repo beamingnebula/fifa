@@ -137,3 +137,51 @@ export const getTimezoneAbbr = (offset) => {
   return `UTC${sign}${hrs}${minStr}`;
 };
 
+export const getLiveMatchClock = (utcDateStr) => {
+  const kickoff = new Date(utcDateStr);
+  const now = new Date();
+  const elapsedMs = now.getTime() - kickoff.getTime();
+  const elapsedMins = elapsedMs / (1000 * 60);
+
+  if (elapsedMins < 0) {
+    return '0:00';
+  }
+  
+  // 1st Half: 0 - 45 mins
+  if (elapsedMins <= 45) {
+    const min = Math.floor(elapsedMins);
+    const sec = Math.floor((elapsedMins - min) * 60);
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+  }
+  
+  // 1st Half Stoppage Time: 45 - 50 mins (approx 5 mins of stoppage time before Halftime)
+  if (elapsedMins <= 50) {
+    const stoppageMins = Math.floor(elapsedMins - 45);
+    const stoppageSecs = Math.floor((elapsedMins - 45 - stoppageMins) * 60);
+    return `45+${stoppageMins}:${stoppageSecs.toString().padStart(2, '0')}`;
+  }
+  
+  // Halftime: 50 - 65 mins (15 mins break)
+  if (elapsedMins <= 65) {
+    return 'HT';
+  }
+  
+  // 2nd Half: 65 - 110 mins (45 mins play time, starts at 45:00 at 65th min, goes to 90:00 at 110th min)
+  if (elapsedMins <= 110) {
+    const matchClockMins = (elapsedMins - 65) + 45;
+    const min = Math.floor(matchClockMins);
+    const sec = Math.floor((matchClockMins - min) * 60);
+    return `${min}:${sec.toString().padStart(2, '0')}`;
+  }
+  
+  // 2nd Half Stoppage Time: 110 - 116 mins (approx 6 mins stoppage time)
+  if (elapsedMins <= 116) {
+    const stoppageMins = Math.floor(elapsedMins - 110);
+    const stoppageSecs = Math.floor((elapsedMins - 110 - stoppageMins) * 60);
+    return `90+${stoppageMins}:${stoppageSecs.toString().padStart(2, '0')}`;
+  }
+  
+  return 'FT';
+};
+
+

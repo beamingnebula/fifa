@@ -8,6 +8,7 @@ import { getMatchStatus, getVenueById } from '../utils/matchUtils';
 import { formatFullDate, formatKickoff, formatDateTime, getTimezoneAbbr } from '../utils/timeUtils';
 import { MapPin, Clock, Calendar, Activity, BarChart3, ArrowRight, RefreshCw } from 'lucide-react';
 import { useFixtures } from '../context/FixturesContext';
+import MatchClock from '../components/MatchClock';
 
 export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
   const { fixtures, refresh, loading } = useFixtures();
@@ -107,7 +108,7 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
         <div style={{ marginBottom: 16 }}>
           {isLive && (
             <span className="match-stage-badge badge-live" style={{ marginBottom: 0 }}>
-              <span className="live-dot" /> LIVE
+              <span className="live-dot" /> LIVE • <MatchClock utcDate={currentMatch.utcDate} status={status} />
             </span>
           )}
           {isFT && (
@@ -132,9 +133,25 @@ export default function MatchDetail({ match, onBack, timezoneOffset = 6 }) {
 
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
             {isFT || isLive ? (
-              <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 56, color: 'white', lineHeight: 1, letterSpacing: 4 }}>
-                {currentMatch.homeScore} - {currentMatch.awayScore}
-              </div>
+              <>
+                <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 56, color: 'white', lineHeight: 1, letterSpacing: 4 }}>
+                  {currentMatch.homeScore} - {currentMatch.awayScore}
+                </div>
+                {isLive && (
+                  <div style={{
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: 'var(--fifa-gold)',
+                    background: 'rgba(255, 215, 0, 0.12)',
+                    padding: '4px 12px',
+                    borderRadius: 12,
+                    marginTop: 8,
+                    letterSpacing: '0.5px'
+                  }}>
+                    <MatchClock utcDate={currentMatch.utcDate} status={status} />
+                  </div>
+                )}
+              </>
             ) : (
               <>
                 <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: 28, color: 'rgba(255,255,255,0.5)', letterSpacing: 3 }}>VS</div>

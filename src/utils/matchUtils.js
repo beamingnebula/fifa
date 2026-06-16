@@ -8,7 +8,7 @@ export const getMatchStatus = (match) => {
   if (match.homeScore !== null && match.awayScore !== null) return 'FT';
   const now = new Date();
   const kickoff = new Date(match.utcDate);
-  const endTime = new Date(kickoff.getTime() + 110 * 60 * 1000);
+  const endTime = new Date(kickoff.getTime() + 116 * 60 * 1000);
   if (now >= kickoff && now <= endTime) return 'LIVE';
   if (now < kickoff) return 'UPCOMING';
   return 'FT';

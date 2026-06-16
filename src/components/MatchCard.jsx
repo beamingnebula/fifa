@@ -4,6 +4,7 @@ import FlagIcon from './FlagIcon';
 import { formatDateTime, formatKickoff, formatDate, getTimezoneAbbr } from '../utils/timeUtils';
 import { getMatchStatus, getVenueById, getStageName } from '../utils/matchUtils';
 import { TEAMS } from '../data/teams';
+import MatchClock from './MatchClock';
 
 const STAGE_BADGE = {
   GROUP: 'badge-group',
@@ -33,7 +34,9 @@ export default function MatchCard({ match, onClick, featured = false, timezoneOf
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
         <span className={`match-stage-badge ${isLive ? 'badge-live' : STAGE_BADGE[match.stage] || 'badge-group'}`}>
           {isLive && <span className="live-dot" />}
-          {isLive ? 'LIVE' : match.group ? `Group ${match.group}` : getStageName(match.stage)}
+          {isLive ? (
+            <>LIVE • <MatchClock utcDate={match.utcDate} status={status} /></>
+          ) : match.group ? `Group ${match.group}` : getStageName(match.stage)}
         </span>
         {isFT && (
           <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -60,9 +63,24 @@ export default function MatchCard({ match, onClick, featured = false, timezoneOf
         {/* Score / VS */}
         <div className="match-vs-block">
           {isFT || isLive ? (
-            <span className={`match-score${isLive ? '' : ''}`} style={{ color: featured ? 'white' : undefined }}>
-              {match.homeScore} - {match.awayScore}
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <span className={`match-score${isLive ? '' : ''}`} style={{ color: featured ? 'white' : undefined }}>
+                {match.homeScore} - {match.awayScore}
+              </span>
+              {isLive && (
+                <div style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: featured ? 'rgba(255, 215, 0, 0.9)' : 'var(--fifa-red)',
+                  marginTop: 4,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 3
+                }}>
+                  <MatchClock utcDate={match.utcDate} status={status} />
+                </div>
+              )}
+            </div>
           ) : (
             <div style={{ textAlign: 'center' }}>
               <div className="match-score upcoming" style={{ color: featured ? 'rgba(255,255,255,0.7)' : undefined }}>

@@ -95,8 +95,11 @@ export default function Highlights({ onBack }) {
   const { fixtures } = useFixtures();
 
   const completedHighlights = React.useMemo(() => {
-    // 1. Get completed matches from fixtures
-    const completedMatches = fixtures.filter(f => getMatchStatus(f) === 'FT' || f.homeScore !== null);
+    // 1. Get completed matches from fixtures (only after 11th June, i.e. starting 12th June)
+    const completedMatches = fixtures.filter(f => 
+      (getMatchStatus(f) === 'FT' || f.homeScore !== null) && 
+      new Date(f.utcDate) >= new Date('2026-06-12T00:00:00Z')
+    );
 
     // 2. Map completed matches to highlight entries
     const items = completedMatches.map(match => {

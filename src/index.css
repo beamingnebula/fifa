@@ -436,9 +436,7 @@ h1, h2, h3, h4, h5 {
   width: 100%;
   padding: 0 var(--space-md);
   box-sizing: border-box;
-  /* No top margin — hero gradient flows seamlessly into stats strip */
-  margin-top: 0;
-  padding-top: var(--space-md);
+  margin-top: -36px;
   position: relative;
   z-index: 10;
 }
@@ -1052,7 +1050,7 @@ h1, h2, h3, h4, h5 {
 
   .stats-strip-wrapper {
     max-width: 1200px;
-    margin: var(--space-lg) auto 0;
+    margin: -36px auto 0;
     padding: 0 var(--space-lg);
     box-sizing: border-box;
   }

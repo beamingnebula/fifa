@@ -161,35 +161,24 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
           </div>
         </div>
 
-        {/* ===== FUTURE STATS STRIP ===== */}
-        <div className="stats-strip-wrapper">
-          <div className="stats-strip hud-glass-card" style={{ border: '1px solid rgba(0, 245, 255, 0.25)', padding: '16px 20px' }}>
-            <div className="stat-item" onClick={() => onNavigate('fixtures')} id="stats-total-fixtures">
-              <span className="stat-number" style={{ color: '#00F5FF', textShadow: '0 0 10px rgba(0, 245, 255, 0.3)' }}>{fixtures.length}</span>
-              <span className="stat-label">Total matches</span>
-              {/* Stat glow bar */}
-              <div style={{ width: '100%', height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
-                <div style={{ width: '100%', height: '100%', background: '#00F5FF', boxShadow: '0 0 8px #00F5FF' }} />
-              </div>
-            </div>
-            
-            <div className="stat-item" onClick={() => onNavigate('matches-played')} id="stats-played-fixtures">
-              <span className="stat-number red">{completed.length}</span>
-              <span className="stat-label">Played</span>
-              {/* Stat glow bar */}
-              <div style={{ width: '100%', height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
-                <div style={{ width: `${playedPct}%`, height: '100%', background: 'var(--fifa-red)', boxShadow: '0 0 8px var(--fifa-red)' }} />
-              </div>
-            </div>
+      </div>
 
-            <div className="stat-item" onClick={() => onNavigate('matches-remaining')} id="stats-remaining-fixtures">
-              <span className="stat-number gold">{upcoming.length}</span>
-              <span className="stat-label">Remaining</span>
-              {/* Stat glow bar */}
-              <div style={{ width: '100%', height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginTop: 8, overflow: 'hidden' }}>
-                <div style={{ width: `${remainingPct}%`, height: '100%', background: 'var(--fifa-gold)', boxShadow: '0 0 8px var(--fifa-gold)' }} />
-              </div>
-            </div>
+      {/* ===== FUTURE STATS STRIP ===== */}
+      <div className="stats-strip-wrapper">
+        <div className="stats-strip" style={{ padding: '16px 20px' }}>
+          <div className="stat-item" onClick={() => onNavigate('fixtures')} id="stats-total-fixtures">
+            <span className="stat-number">{fixtures.length}</span>
+            <span className="stat-label">TOTAL</span>
+          </div>
+          
+          <div className="stat-item" onClick={() => onNavigate('matches-played')} id="stats-played-fixtures">
+            <span className="stat-number red">{completed.length}</span>
+            <span className="stat-label">PLAYED</span>
+          </div>
+
+          <div className="stat-item" onClick={() => onNavigate('matches-remaining')} id="stats-remaining-fixtures">
+            <span className="stat-number gold">{upcoming.length}</span>
+            <span className="stat-label">REMAINING</span>
           </div>
         </div>
       </div>
