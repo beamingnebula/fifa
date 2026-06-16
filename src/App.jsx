@@ -220,6 +220,7 @@ export default function App() {
             onBack={null}
             settings={settings}
             onSettingsChange={setSettings}
+            onNavigate={handleTabChange}
           />
         );
       default:

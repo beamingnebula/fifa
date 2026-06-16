@@ -8,7 +8,7 @@ const NAV_ITEMS = [
   { id: 'matches',    label: 'Live',     icon: Activity },
   { id: 'highlights', label: 'Videos',   icon: Play },
   { id: 'worldmap',   label: 'Map',      icon: Map },
-  { id: 'settings',   label: 'More',     icon: Settings },
+  { id: 'settings',   label: 'Settings', icon: Settings },
 ];
 
 export default function SidebarNav({ activeTab, onTabChange, liveCount = 0 }) {

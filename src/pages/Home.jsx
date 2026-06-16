@@ -8,6 +8,7 @@ import { TEAMS } from '../data/teams';
 import { isToday, formatKickoff, formatDate, getTimezoneAbbr } from '../utils/timeUtils';
 import { getMatchStatus } from '../utils/matchUtils';
 import { useFixtures } from '../context/FixturesContext';
+import { GradientBackground } from '../components/ui/paper-design-shader-background';
 
 export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] }) {
   const {
@@ -104,6 +105,8 @@ export default function Home({ onNavigate, timezoneOffset = 6, favorites = [] })
           overflow: 'hidden'
         }}
       >
+        <GradientBackground />
+
         {/* Futuristic Grid Overlay */}
         <div className="hologram-grid-overlay" />
 

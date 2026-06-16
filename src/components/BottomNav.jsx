@@ -1,12 +1,10 @@
-import { Home, Calendar, Users, Play, Map, Settings, Activity } from 'lucide-react';
+import { Home, Calendar, Users, Settings, Activity } from 'lucide-react';
 
 const NAV_ITEMS = [
   { id: 'home',       label: 'Home',     icon: Home },
   { id: 'fixtures',   label: 'Fixtures', icon: Calendar },
-  { id: 'teams',      label: 'Teams',    icon: Users },
   { id: 'matches',    label: 'Live',     icon: Activity },
-  { id: 'highlights', label: 'Videos',   icon: Play },
-  { id: 'worldmap',   label: 'Map',      icon: Map },
+  { id: 'teams',      label: 'Teams',    icon: Users },
   { id: 'settings',   label: 'More',     icon: Settings },
 ];
 
@@ -24,7 +22,7 @@ export default function BottomNav({ activeTab, onTabChange, liveCount = 0 }) {
             {id === 'matches' && liveCount > 0 && (
               <span className="nav-badge">{liveCount}</span>
             )}
-            <Icon size={20} strokeWidth={activeTab === id ? 2.5 : 1.8} />
+            <Icon size={20} strokeWidth={activeTab === id ? 2.2 : 1.8} />
             <span className="nav-label">{label}</span>
           </button>
         ))}
